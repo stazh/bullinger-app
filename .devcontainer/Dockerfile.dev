@@ -52,7 +52,7 @@ RUN curl -L -o exist-distribution-${EXIST_VERSION}-unix.tar.bz2 https://github.c
     && rm exist-distribution-${EXIST_VERSION}-unix.tar.bz2 \
     && mv /usr/local/exist-distribution-${EXIST_VERSION} /usr/local/exist
 
-RUN  git clone --depth 1 -b main https://github.com/bullinger-digital/bullinger-korpus-tei.git
+RUN  git clone --depth 1 -b main https://github.com/stazh/bullinger-korpus-tei.git
 
 RUN cd /workspaces/bullinger-korpus-tei \
     && ant \
