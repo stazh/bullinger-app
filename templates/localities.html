@@ -45,30 +45,31 @@
         </pb-page>
         <footer data-template="templates:include" data-template-path="templates/footer.html"/>
         <script>
-            window.addEventListener('load', function() {
+            window.addEventListener('WebComponentsReady', function() {
                 const map = document.querySelector('pb-leaflet-map');
-                map.addEventListener('pb-ready', function() {
-                    const pbPage = document.querySelector("pb-page")
+
+                pbEvents.subscribe('pb-page-ready', null, function() {
+                    const pbPage = document.querySelector('pb-page');
                     // console.log(`pbPage:`, pbPage);
                     const endpoint = pbPage.getEndpoint();
                     // console.log(`endpoint:`, endpoint);
-                    const url = endpoint + "/api/localities-all";
+                    const url = endpoint + '/api/localities-all';
                     // console.log(`fetching localities from:`, url);
-                    
+
                     fetch(url)
                         .then(function(response) {
                             return response.json();
                         })
                         .then(function(json) {
-                            pbEvents.emit("pb-update-map", "map", json)
+                            pbEvents.emit('pb-update-map', 'map', json);
                         });
                 });
 
                 pbEvents.subscribe('pb-leaflet-marker-click', 'map', function(ev) {
-                    const label = ev.detail.label;
-                    const key = ev.detail.id;
+                    const label = ev.detail.element.label;
+                    const key = ev.detail.element.id;
                     const category = label.substring(0, 1);
-                    window.location = `${label}?key=${key}&amp;category=${category}`;
+                    window.location = key + '?category=' + category;
                 });
             });
         </script>
