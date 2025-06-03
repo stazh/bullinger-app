@@ -176,6 +176,10 @@ footer {
     text-align: center;
 }
 
+footer {
+    overflow: hidden;
+}
+
 footer,
 footer a,
 footer a:link,
@@ -370,6 +374,7 @@ a.btn-search-reset:hover {
     display:block;
     opacity: 1;
     transform: scaleY(1);
+    z-index: 1500;
 }
 .dropdown-menu > li ul li {
     display: block;
