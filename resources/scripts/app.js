@@ -1,5 +1,66 @@
+/**
+ * Waits for a specific element to appear inside the shadow DOM of a web component host,
+ * and then invokes a callback with that element.
+ *
+ * @param {string} selector - CSS selector of the target element inside the shadow DOM.
+ * @param {string} shadowHostSelector - CSS selector of the shadow host element.
+ * @param {Function} callback - Function to be called once the element becomes available.
+ *
+ * This function can be called at any time — even before the DOM is fully loaded.
+ * It automatically waits until the DOM is ready, then searches the shadow DOM for the given element.
+ * If the element is not immediately available, it uses a MutationObserver to wait for it to be added.
+ */
+function waitForElementInShadow(selector, shadowHostSelector, callback) {
+    const setup = () => {
+        const host = document.querySelector(shadowHostSelector);
+        if (!host || !host.shadowRoot) {
+            console.warn("Shadow DOM not available: ", shadowHostSelector);
+            return;
+        }
+
+        const element = host.shadowRoot.querySelector(selector);
+        if (element) {
+            callback(element);
+        } else {
+            const observer = new MutationObserver(() => {
+                const element = host.shadowRoot.querySelector(selector);
+                if (element) {
+                    observer.disconnect();
+                    callback(element);
+                }
+            });
+            observer.observe(host.shadowRoot, { childList: true, subtree: true });
+        }
+    };
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", () => {
+            requestAnimationFrame(() => requestAnimationFrame(setup));
+        });
+    } else {
+        requestAnimationFrame(() => requestAnimationFrame(setup));
+    }
+}
+
+/**
+ * Synchronizes the checked state of multiple checkbox elements
+ * whenever a custom event with a `detail.checked` property is fired.
+ *
+ * @param {string} eventName - The name of the custom event to listen for.
+ * @param {HTMLInputElement[]} checkboxes - An array of checkbox elements to synchronize.
+ */
+function syncCheckboxesOnEvent(eventName, checkboxes) {
+    window.addEventListener(eventName, function(e) {
+        checkboxes.forEach(cb => {
+            if (cb && cb.checked !== e.detail.checked) {
+                cb.checked = e.detail.checked;
+            }
+        });
+    });
+}
+
 window.addEventListener('DOMContentLoaded', function() {
-    const toggle = document.querySelector('[name=lang-toggle]')
+    const toggle = document.querySelector('[name=lang-toggle]');
 
     function applyLangColors () {
         const view = document.getElementById('view1')
@@ -31,7 +92,7 @@ window.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    toggle.addEventListener('change', applyLangColors)
+    toggle.addEventListener('change', applyLangColors);
 
     pbEvents.subscribe('pb-update', 'transcription', ev => {
         applyLangColors()
@@ -124,6 +185,34 @@ window.addEventListener('DOMContentLoaded', function() {
                 pbEvents.emit('pb-show-annotation', 'facsimile', { coordinates: null });
             }
         });
-    })
+    });
+
+    /**
+     * Waits for the shadow DOM checkbox inside <pb-view id="metadata"> to become available,
+     * then synchronizes its state with the light DOM checkbox whenever the 'entities-toggled'
+     * event is fired. Non-existent checkboxes are filtered out before binding.
+     */
+    waitForElementInShadow('input#entityCheckbox', 'pb-view#metadata', (entityCheckboxShadow) => {
+        const entityCheckboxLight = document.querySelector('.js-toggle-entities');
+        syncCheckboxesOnEvent('entities-toggled', [entityCheckboxShadow, entityCheckboxLight].filter(Boolean));
+    });
 });
 
+/**
+ * Listens for the custom 'toggle-entities' event, which is dispatched when a user
+ * interacts with one of the entity checkboxes (to toggle named entity highlighting).
+ *
+ * - Toggles the CSS class 'colorize-named-entities' on the <body> element depending on the checkbox state.
+ * - Emits a second custom event, 'entities-toggled', to notify all synchronized checkboxes to update
+ *   their state accordingly.
+ */
+window.addEventListener('toggle-entities', (e) => {
+    const isChecked = e.detail.checked;
+    document.body.classList.toggle('colorize-named-entities', isChecked);
+
+    window.dispatchEvent(new CustomEvent('entities-toggled', {
+        detail: { checked: isChecked },
+        bubbles: true,
+        composed: true
+    }));
+});

@@ -121,7 +121,7 @@ body {
 body.colorize-named-entities {
     --bb-named-entity-person-color: hsla(48,97%,77%,.7);
     --bb-named-entity-place-color: rgba(167,243,208,.7);
-    --bb-named-entity-padding: 0.10rem 0.3rem;
+    --bb-named-entity-padding: 0.05rem 0;
     --bb-named-entity-border-radius: 0.25rem;
 }
 
@@ -1150,6 +1150,23 @@ pb-split-list::part(items) {
     border-bottom: 1px solid #f5f5f5;
     padding: 1.4rem 2rem 1.2rem 2rem;
     margin-bottom: 0;
+}
+
+.section-letter-text-controls {
+    background: var(--tify-header-bg,#f5f5f5);
+    box-shadow: 0 1px var(--tify-border-color,rgba(0,0,0,.2));
+    box-sizing: border-box;
+    min-height: 3.375rem;
+    padding: 0.4rem 1.8rem;
+    position: sticky;
+    top: 0;
+    z-index: 10000;
+}
+
+.section-letter-text-controls__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
 }
 
 .section-content { 
