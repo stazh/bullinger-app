@@ -27,7 +27,7 @@ declare function ext:get-header($letter, $lang-browser as xs:string?) {
                 <a title="Nächster Brief (mit gleichen Korrespondenten)" href="./{$next-letter-correspondence}"><iron-icon icon="chevron-right"/><iron-icon class="double-icon" icon="chevron-right"/></a>
                 <a title="Nächster Brief (nach Datum)" href="./{$next-letter}"><iron-icon icon="chevron-right"/></a>
                 <span class="letter-navigation-mark-names">
-                    <label><input type="checkbox" onclick="javascript:document.body.classList.toggle('colorize-named-entities', this.checked)" /> <pb-i18n key="mark-named-entities">(Namen markieren)</pb-i18n></label>
+                    <label><input type="checkbox" id="entityCheckbox" onclick="this.dispatchEvent(new CustomEvent('toggle-entities', &#123;bubbles: true, composed: true, detail: &#123; checked&#58; this.checked &#125;&#125;))" /> <pb-i18n key="mark-named-entities">(Namen markieren)</pb-i18n></label>
                 </span>
             </div>
         </div>
