@@ -60,9 +60,12 @@ declare function ext:get-header($letter, $lang-browser as xs:string?) {
                             {
                                 for $p in $persons
                                 let $url := $p//tei:idno[@subtype='portrait']/text()
+                                let $id := $p/@xml:id/string()
                                 let $title := $p/tei:persName[@type='main']//tei:forename || " " || $p/tei:persName[@type='main']//tei:surname
                                 return <div class="portrait">
-                                    <img src="resources/portraits/{$url}" alt="{$title}" />
+                                    <a class="portrait__link" href="./persons/{$id}">
+                                        <img class="portrait__image" src="resources/portraits/{$url}" alt="{$title}" title="{$title}" />
+                                    </a>
                                 </div>
                             }
                         </div>

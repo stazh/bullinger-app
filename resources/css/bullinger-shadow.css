@@ -78,3 +78,12 @@
 .portrait-container:hover .portrait {
     margin-left:-1rem;
 }
+
+.portrait__link {
+    display: inline-block;
+    line-height: 0;
+}
+
+.portrait__image {
+  display: block;
+}
