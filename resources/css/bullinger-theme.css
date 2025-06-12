@@ -889,10 +889,35 @@ pb-view {
 
 .place-list .place-link {
     display: inline-block;
+    position: relative;
 }
 
 .place-list .place-name {
     padding-right: 1rem;
+}
+
+.place-list .place-counts-tooltip {
+    background: var(--bb-white);
+    border: 1px solid var(--bb-light-gray);
+    border-radius: 0.5rem;
+    color: var(--bb-dark-gray);
+    display: none;
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    position: absolute;
+    top: 0;
+    white-space: nowrap;
+    z-index: 500;
+}
+
+.place-list .place-counts-label,
+.place-list .place-counts-value {
+    display: inline-block;
+    white-space: nowrap;
+}
+
+.place-list .place-counts-value {
+    font-weight: bold;
 }
 
 .place-list iron-icon.place-icon {
@@ -906,6 +931,10 @@ pb-view {
 
 .place-list .place-item:hover iron-icon.place-icon {
     --iron-icon-fill-color: var(--bb-beige-dark);        
+}
+
+.place-list .place-item:hover .place-counts-tooltip {
+    display: inline-block;
 }
 
 .register-list pb-custom-form {

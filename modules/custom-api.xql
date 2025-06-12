@@ -191,7 +191,7 @@ declare function api:localities-all-list($request as map(*)) {
     (: --- Build and return the final response map --- :)
     return
         map {
-            "items": api:output-locality($itemsToShow, $letter, $search),
+            "items": api:output-locality($itemsToShow, $letter, $search, $mapping),
             "categories":
                 if ((count($places) < $limit)  or $search != '') then
                     []
@@ -214,7 +214,7 @@ declare function api:localities-all-list($request as map(*)) {
         }
 };
 
-declare function api:output-locality($list, $letter as xs:string, $search as xs:string?) {
+declare function api:output-locality($list, $letter as xs:string, $search as xs:string?, $mapping as map(*)) {
     let $count := count($list)
     return
         array {
@@ -231,6 +231,10 @@ declare function api:output-locality($list, $letter as xs:string, $search as xs:
                 attribute class { "place-list" },
                 for $place in $list
                     let $name := ft:field($place, 'name')[1]
+                    let $id := $place/@xml:id/string()
+                    let $placeCounts := $mapping($id)
+                    let $corresp := if (exists($placeCounts?corresp)) then $placeCounts?corresp else 0
+                    let $mentions := if (exists($placeCounts?mentions)) then $placeCounts?mentions else 0
                     return
                         if(string-length($name)>0)
                         then (                       
@@ -246,6 +250,32 @@ declare function api:output-locality($list, $letter as xs:string, $search as xs:
                                     element span {
                                         attribute class { "place-name" },
                                         $name
+                                    },
+                                    element span {
+                                        attribute class { "place-counts-tooltip" },
+                                        element span {
+                                            attribute class { "place-counts-label" },
+                                            element pb-i18n {
+                                                attribute key { "registers.correspondenceAndMentions" }
+                                            }
+                                        },
+                                        text { ": " },
+                                        element span {
+                                            attribute class { "place-counts-value" },
+                                            $mentions
+                                        },
+                                        element br {},
+                                        element span {
+                                            attribute class { "place-counts-label" },
+                                            element pb-i18n {
+                                                attribute key { "registers.correspondence" }
+                                            }
+                                        },
+                                        text { ": " },
+                                        element span {
+                                            attribute class { "place-counts-value" },
+                                            $corresp
+                                        }
                                     },
                                     if(string-length(normalize-space($place/tei:location/tei:geo)) > 0)
                                     then (
