@@ -700,6 +700,14 @@
                         "schema":{
                             "type": "string"
                         }
+                    },
+                    {
+                        "name": "view",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "default": ""
+                        }
                     }
                 ],
                 "responses": {

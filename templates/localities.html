@@ -12,12 +12,30 @@
             </header>
             <main class="register register__localities center-l">
                 <div class="register-list">
+                    <pb-custom-form id="filter" class="facets" auto-submit="[name=view]" emit="transcription">
+                        <div class="radios">
+                            <label class="radio-option">
+                                <input class="radio-input" type="radio" name="view" checked="checked" value="all" data-template="templates:form-control" />
+                                <pb-i18n key="registers.correspondenceAndMentions">Korrespondenz und Erwähnungen</pb-i18n>
+                            </label>
+                            <label class="radio-option">
+                                <input class="radio-input" type="radio" name="view" value="correspondence" data-template="templates:form-control" />
+                                <pb-i18n key="registers.correspondence">Korrespondenz</pb-i18n>
+                            </label>
+                        </div>
+                    </pb-custom-form>
                     <pb-custom-form id="options" auto-submit="paper-input,paper-icon-button" emit="transcription">
                         <paper-input id="query" name="search" data-i18n="[label]registers.search" label="(Search)" data-template="templates:form-control">
                             <paper-icon-button icon="search" slot="suffix"/>
                         </paper-input>
                     </pb-custom-form>
-                    <pb-split-list class="register-split-list" url="api/localities-all-list" subforms="#options" selected="A" emit="transcription" subscribe="transcription" data-template="pages:parse-params"/>
+                    <pb-split-list class="register-split-list" 
+                        url="api/localities-all-list" 
+                        subforms="#options,#filter" 
+                        selected="A" 
+                        emit="transcription" 
+                        subscribe="transcription" 
+                        data-template="pages:parse-params"/>
                 </div>
                 <pb-leaflet-map id="map" subscribe="map" emit="map" zoom="10" cluster="" latitude="47.3686498" longitude="8.5391825">
                     <pb-map-layer show=""
