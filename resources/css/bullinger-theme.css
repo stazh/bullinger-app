@@ -45,6 +45,7 @@
     --bb-field-gray: rgb(233,237,234);
     --bb-field-gray-500: rgb(83, 101, 88);
     --bb-beige: rgba(170,129,90);
+    --bb-beige-dark: #8a6e4e;
     --bb-footer-color: var(--bb-white);
     --bb-lang-de-color: rgb(220, 249, 222);
     --bb-lang-el-color: rgb(250, 229, 235);
@@ -144,7 +145,7 @@ body.colorize-named-entities {
     display: inline-block;
 }
 .bullinger-button:hover {
-    background-color: #8a6e4e;
+    background-color: var(--bb-beige-dark);
 }
 
 .center-l {
@@ -417,9 +418,13 @@ main {
     --pb-browse-toolbar-justify-content: space-between;
 }
 
-a, a:link, a:visited, a:hover, a:active {
+a, a:link, a:visited, a:active {
     text-decoration: none;
     color: var(--bb-beige);
+}
+
+a:hover {
+    color: var(--bb-beige-dark);
 }
 
 main .panels .doclist {
@@ -528,6 +533,28 @@ pb-collapse > div{
 }
 .facets pb-combo-box {
     margin-bottom: 0.2rem;
+}
+
+pb-custom-form.facets .radios {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+pb-custom-form.facets .radio-option {
+    align-items: center;
+    cursor: pointer;
+    display: flex;
+    font-size: 16px;
+    gap: 0.5rem;  
+}
+
+pb-custom-form.facets .radio-option:hover {
+    color: var(--bb-beige-dark);
+}
+
+pb-custom-form.facets .radio-input {
+    margin: 0;
 }
 
 @media (max-width: 1023px) {
@@ -854,9 +881,36 @@ pb-view {
     float:left;
 }
 
+.place-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 0 -0.2rem;
+}
+
+.place-list .place-link {
+    display: inline-block;
+}
+
+.place-list .place-name {
+    padding-right: 1rem;
+}
+
+.place-list iron-icon.place-icon {
+    --iron-icon-fill-color: var(--bb-beige);
+    margin-right: 0.3rem;
+}
+
+.place-list .place-item:hover a.place-link {
+    color: var(--bb-beige-dark);
+}
+
+.place-list .place-item:hover iron-icon.place-icon {
+    --iron-icon-fill-color: var(--bb-beige-dark);        
+}
+
 .register-list pb-custom-form {
     justify-self: start;
-    max-width: 30rem;
+    max-width: 35rem;
     width: 100%;
     margin-bottom: 1rem;
 }
@@ -865,16 +919,48 @@ pb-view {
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-gap: var(--s3);
+    margin-top: 3rem;
+    grid-template-areas: "first second";
+}
+
+@media (max-width: 768px) {
+    .register__localities {
+        grid-gap: var(--s1);
+        grid-template-columns: 1fr;
+        grid-template-areas:
+        "second"
+        "first";
+        margin-top: 1rem;
+    }
 }
 
 .register__localities .register-list {
     --pb-categorized-list-columns: 1;
+    grid-area: first;
+}
+
+.register__localities .result-count {
+    margin: 0 0 1rem;
+}
+
+.register__localities .result-count-output {
+    padding: 0 0.7rem;
+}
+
+.register__localities .register-list pb-custom-form.facets {
+    margin-bottom: 0;
 }
 
 .register__localities pb-leaflet-map {
-    margin-top: 5rem;
+    grid-area: second;
     width: 100%;
     height: 50vh;
+}
+
+@media (max-width: 768px) {
+    .register__localities pb-leaflet-map {
+        height: 30vh;
+    }
 }
 
 .bio-footnotes-more {
@@ -913,6 +999,13 @@ pb-view {
     margin: var(--s0) 0;
     max-width: 100%;
     height: 32rem;
+}
+
+@media (max-width: 768px) {
+    .detail-locality pb-leaflet-map#map {
+        height: 30vh;
+        width: 100%;
+    }
 }
 
 .detail-image {
@@ -980,12 +1073,24 @@ pb-split-list::part(active-category) {
     background: green;
 } */
 
+
+pb-split-list::part(category),
+pb-split-list::part(active-category) {
+    border-radius: 0.3rem;
+    box-sizing: border-box;
+    margin-bottom: 0.2rem;
+    min-width: 1.1rem;
+    padding: 0 0.1rem;
+    text-align: center;
+}
+
 pb-split-list::part(category) {
     color: var(--bb-dark-gray);
 }
 
 pb-split-list::part(active-category) {
-    color: var(--bb-black);
+    color: var(--bb-white);
+    background-color: var(--bb-beige-dark);
 }
 
 pb-split-list::part(items) {
