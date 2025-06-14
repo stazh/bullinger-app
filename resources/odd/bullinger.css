@@ -237,25 +237,79 @@ a[rel=footnote] {
     color: var(--pb-footnote-color)
 }
 
-.letter-navigation a[href='./'] {
-    color: #BDBDBD;
-    pointer-events: none;
-}
-
 .letter-navigation {
     background: var(--bb-pale);
 }
-.letter-navigation iron-icon.double-icon {
-    margin-left: -18px;
-}
-.letter-navigation > div {
-    padding: 5px 0;
-    display: flex;
+
+.letter-navigation-inner {
     align-items: center;
+    display: flex;
+    gap: 0.7rem;
+    padding: 0.35rem 1rem;
+}
+
+.letter-navigation-group {
+    align-items: center;
+    display: flex;
+    gap: 0.5rem;
+    padding-right: 0.5rem;
+    position: relative;
+}
+
+.letter-navigation-group::after {
+    background-color: var(--bb-gray);
+    content: '';
+    height: 1.3rem;
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1px;
+}
+
+.letter-navigation-group-icon {
+    --iron-icon-fill-color: var(--bb-field-gray-500);
+}
+
+.letter-navigation-link {
+    align-items: center;
+    color: var(--bb-link);
+    display: inline-flex;
+    gap: 0.1rem;
+    position: relative;
+}
+
+.letter-navigation-link:hover {
+    color: var(--bb-link-hover);
+}
+
+.letter-navigation-link[href='./'],
+.letter-navigation-link[href='./']:hover {
+    color: var(--bb-link-disabled);
+    pointer-events: none;
+}
+
+.letter-navigation-tooltip {
+    background: var(--bb-white);
+    border: 1px solid var(--bb-light-gray);
+    border-radius: 0.5rem;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    color: var(--bb-link);
+    display: none;
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    position: absolute;
+    left: 0;
+    top: 1.5rem;
+    white-space: nowrap;
+    z-index: 500;
+}
+
+.letter-navigation-link:hover .letter-navigation-tooltip {
+    display: inline-block;
 }
 
 .letter-navigation-mark-names {
-    margin-left: 15px;
     margin-top: -2px;
     font-family: var(--bb-font-family-sans);
 }
@@ -264,9 +318,11 @@ a[rel=footnote] {
     display: flex;
     align-items:center;
 }
+
 .letter-navigation-mark-names input {
     margin-right: 5px;
 }
+
 .header-container {
     display:flex;
     justify-content:space-between;
