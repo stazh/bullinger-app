@@ -1170,3 +1170,12 @@ pb-split-list::part(items) {
     display: block!important;
     white-space:nowrap;
 }
+
+.timeline {
+    width: 100%;
+    overflow-x: scroll;
+}
+
+.timeline pb-timeline {
+    width: 96%
+}
