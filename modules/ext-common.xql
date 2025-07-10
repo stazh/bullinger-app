@@ -19,15 +19,36 @@ declare function ext:get-header($letter, $lang-browser as xs:string?) {
     let $next-letter-correspondence := $navigation-item/tei:ptr[@type='next-same-correspondents']/@target
     let $type := $letter/ancestor::tei:TEI/@type/string()
 
-    return <div>
+    return <div class="top-container">
         <div class="letter-navigation">
-            <div class="center-l">
-                <a title="Vorheriger Brief (nach Datum)" href="./{$previous-letter}"><iron-icon icon="chevron-left"/></a>
-                <a title="Vorheriger Brief (mit gleichen Korrespondenten)" href="./{$previous-letter-correspondence}"><iron-icon icon="chevron-left"/><iron-icon class="double-icon" icon="chevron-left"/></a>
-                <a title="Nächster Brief (mit gleichen Korrespondenten)" href="./{$next-letter-correspondence}"><iron-icon icon="chevron-right"/><iron-icon class="double-icon" icon="chevron-right"/></a>
-                <a title="Nächster Brief (nach Datum)" href="./{$next-letter}"><iron-icon icon="chevron-right"/></a>
+            <div class="letter-navigation-inner center-l">
+                <span class="letter-navigation-group">
+                    <iron-icon class="letter-navigation-group-icon" icon="date-range" aria-hidden="true" fill="currentColor"/>
+                    <a class="letter-navigation-link" href="./{$previous-letter}">
+                        <iron-icon class="letter-navigation-icon" icon="chevron-left"/>
+                        <span class="letter-navigation-tooltip"><pb-i18n key="navigation.previous-letter-by-date">Vorheriger Brief nach Datum</pb-i18n></span>
+                    </a>
+                    <a class="letter-navigation-link" href="./{$next-letter}">
+                        <iron-icon class="letter-navigation-icon" icon="chevron-right"/>
+                        <span class="letter-navigation-tooltip"><pb-i18n key="navigation.next-letter-by-date">Nächster Brief nach Datum</pb-i18n></span>
+                    </a>
+                </span>
+                <span class="letter-navigation-group">
+                    <iron-icon class="letter-navigation-group-icon" icon="social:people" aria-hidden="true" fill="currentColor"/>
+                    <a class="letter-navigation-link" href="./{$previous-letter-correspondence}">
+                        <iron-icon class="letter-navigation-icon" icon="chevron-left"/>
+                        <span class="letter-navigation-tooltip"><pb-i18n key="navigation.previous-letter-by-correspondents">Vorheriger Brief mit gleichen Korrespondenten</pb-i18n></span>
+                    </a>
+                    <a class="letter-navigation-link" href="./{$next-letter-correspondence}">
+                        <iron-icon class="letter-navigation-icon" icon="chevron-right"/>
+                        <span class="letter-navigation-tooltip"><pb-i18n key="navigation.next-letter-by-correspondents">Nächster Brief mit gleichen Korrespondenten</pb-i18n></span>
+                    </a>
+                </span>
                 <span class="letter-navigation-mark-names">
-                    <label><input type="checkbox" onclick="javascript:document.body.classList.toggle('colorize-named-entities', this.checked)" /> <pb-i18n key="mark-named-entities">(Namen markieren)</pb-i18n></label>
+                    <label>
+                        <input type="checkbox" onclick="javascript:document.body.classList.toggle('colorize-named-entities', this.checked)" />
+                        <pb-i18n key="mark-named-entities">(Namen markieren)</pb-i18n>
+                    </label>
                 </span>
             </div>
         </div>
@@ -60,9 +81,12 @@ declare function ext:get-header($letter, $lang-browser as xs:string?) {
                             {
                                 for $p in $persons
                                 let $url := $p//tei:idno[@subtype='portrait']/text()
+                                let $id := $p/@xml:id/string()
                                 let $title := $p/tei:persName[@type='main']//tei:forename || " " || $p/tei:persName[@type='main']//tei:surname
                                 return <div class="portrait">
-                                    <img src="resources/portraits/{$url}" alt="{$title}" />
+                                    <a class="portrait__link" href="./persons/{$id}">
+                                        <img class="portrait__image" src="resources/portraits/{$url}" alt="{$title}" title="{$title}" />
+                                    </a>
                                 </div>
                             }
                         </div>

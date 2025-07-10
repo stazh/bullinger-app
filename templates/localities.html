@@ -37,7 +37,7 @@
                         subscribe="transcription" 
                         data-template="pages:parse-params"/>
                 </div>
-                <pb-leaflet-map id="map" subscribe="map" emit="map" zoom="10" cluster="" latitude="47.3686498" longitude="8.5391825">
+                <pb-leaflet-map id="map" subscribe="map" emit="map" zoom="3" cluster="" latitude="50" longitude="20">
                     <pb-map-layer show=""
                         base="" 
                         label="Mapbox OSM"
@@ -63,30 +63,28 @@
         </pb-page>
         <footer data-template="templates:include" data-template-path="templates/footer.html"/>
         <script>
-            window.addEventListener('load', function() {
+            window.addEventListener('WebComponentsReady', function() {
                 const map = document.querySelector('pb-leaflet-map');
-                map.addEventListener('pb-ready', function() {
-                    const pbPage = document.querySelector("pb-page")
-                    // console.log(`pbPage:`, pbPage);
+
+                pbEvents.subscribe('pb-page-ready', null, function() {
+                    const pbPage = document.querySelector('pb-page');
                     const endpoint = pbPage.getEndpoint();
-                    // console.log(`endpoint:`, endpoint);
-                    const url = endpoint + "/api/localities-all";
-                    // console.log(`fetching localities from:`, url);
-                    
+                    const url = endpoint + '/api/localities-all';
+
                     fetch(url)
                         .then(function(response) {
                             return response.json();
                         })
                         .then(function(json) {
-                            pbEvents.emit("pb-update-map", "map", json)
+                            pbEvents.emit('pb-update-map', 'map', json);
                         });
                 });
 
                 pbEvents.subscribe('pb-leaflet-marker-click', 'map', function(ev) {
-                    const label = ev.detail.label;
-                    const key = ev.detail.id;
+                    const label = ev.detail.element.label;
+                    const key = ev.detail.element.id;
                     const category = label.substring(0, 1);
-                    window.location = `${label}?key=${key}&amp;category=${category}`;
+                    window.location = key + '?category=' + category;
                 });
             });
         </script>

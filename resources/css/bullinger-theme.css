@@ -40,6 +40,7 @@
     --bb-page-bg-color: rgb(249, 250, 251);
     --bb-pale: #f0f0f0;
     --bb-light-gray: #ddd;
+    --bb-gray: #BDBDBD;
     --bb-dark-gray: #777;
     --bb-black: #303030;
     --bb-field-gray: rgb(233,237,234);
@@ -54,6 +55,9 @@
     --bb-lang-fr-color: rgb(229 220 247);
     --bb-lang-it-color: rgb(229 160 247);
     --bb-lang-en-color: rgb(229 250 120);
+    --bb-link: var(--bb-beige);
+    --bb-link-hover: var(--bb-beige-dark);
+    --bb-link-disabled: var(--bb-gray);
 
 
     --pb-link-color: var(--bb-black);
@@ -175,6 +179,10 @@ footer {
     margin: 0;
     font-size: var(--bb-font-size-smallest);
     text-align: center;
+}
+
+footer {
+    overflow: hidden;
 }
 
 footer,
@@ -371,6 +379,7 @@ a.btn-search-reset:hover {
     display:block;
     opacity: 1;
     transform: scaleY(1);
+    z-index: 1500;
 }
 .dropdown-menu > li ul li {
     display: block;
@@ -1293,4 +1302,13 @@ pb-split-list::part(items) {
 .tify-header-title {
     display: block!important;
     white-space:nowrap;
+}
+
+.timeline {
+    width: 100%;
+    overflow-x: scroll;
+}
+
+.timeline pb-timeline {
+    width: 96%
 }

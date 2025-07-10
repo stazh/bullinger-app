@@ -193,5 +193,11 @@
         "after": "after",
         "before": "before",
         "unknown": "unknown"
+    },
+    "navigation": {
+        "previous-letter-by-date": "Previous letter by date",
+        "next-letter-by-date": "Next letter by date",
+        "previous-letter-by-correspondents": "Previous letter between same correspondents",
+        "next-letter-by-correspondents": "Next letter between same correspondents"
     }
 }

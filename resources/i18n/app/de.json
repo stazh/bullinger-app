@@ -193,5 +193,11 @@
         "after": "nach",
         "before": "vor",
         "unknown": "unbekannt"
+    },
+    "navigation": {
+        "previous-letter-by-date": "Vorheriger Brief nach Datum",
+        "next-letter-by-date": "Nächster Brief nach Datum",
+        "previous-letter-by-correspondents": "Vorheriger Brief mit gleichen Korrespondenten",
+        "next-letter-by-correspondents": "Nächster Brief mit gleichen Korrespondenten"
     }
 }
