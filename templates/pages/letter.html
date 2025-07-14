@@ -42,8 +42,19 @@
                         </div>
                     </div>
                     <div class="transkription card">
-                        <h2 class="section-title"><pb-i18n key="letterText">(Brieftext)</pb-i18n> <span data-template="app:transcription-source"></span> 
-                          <small class="small-t"><label for="lang-toggle"><input type="checkbox" name="lang-toggle" id="lang-toggle" value="test" />&#160;<pb-i18n key="showLanguage">(Show Language)</pb-i18n></label></small></h2>
+                        <h2 class="section-title"><pb-i18n key="letterText">(Brieftext)</pb-i18n> <span data-template="app:transcription-source"></span></h2>
+                        <div class="section-letter-text-controls">
+                            <ul class="section-letter-text-controls__list">
+                                <li>
+                                    <span class="letter-navigation-mark-names">
+                                        <label><input type="checkbox" class="js-entity-checkbox" onclick="javascript:document.body.classList.toggle('colorize-named-entities', this.checked)" />&#160;<pb-i18n key="mark-named-entities">(Namen markieren)</pb-i18n></label>
+                                    </span>
+                                </li>
+                                <li>
+                                    <label for="lang-toggle"><input type="checkbox" name="lang-toggle" id="lang-toggle" value="test" />&#160;<pb-i18n key="showLanguage">(Show Language)</pb-i18n></label>
+                                </li>
+                            </ul>
+                        </div>
                         <div class="section-content">
                             <pb-view id="view1" src="document1" column-separator=".tei-cb" append-footnotes="append-footnotes" subscribe="transcription" emit="transcription" use-language="" view="single" />
                             <pb-view id="facsimile-links" src="document1" xpath="//facsimile" view="single" wait-for="#facsimile" emit="facsimile" use-language="">

@@ -196,6 +196,10 @@ display: block;
     margin: auto var(--s-2);
 }
 
+.lang-usage {
+    margin-bottom: 1rem;
+}
+
 /* enforce whitespace between lanaguage name and percentage */
 .lang-usage-percent::before {
     content: ' ';
