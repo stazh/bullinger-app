@@ -47,7 +47,7 @@
                             <ul class="section-letter-text-controls__list">
                                 <li>
                                     <span class="letter-navigation-mark-names">
-                                        <label><input type="checkbox" class="js-toggle-entities" onclick="this.dispatchEvent(new CustomEvent('toggle-entities', {bubbles: true, detail: { checked: this.checked }}))" />&#160;<pb-i18n key="mark-named-entities">(Namen markieren)</pb-i18n></label>
+                                        <label><input type="checkbox" class="js-entity-checkbox" onclick="javascript:document.body.classList.toggle('colorize-named-entities', this.checked)" />&#160;<pb-i18n key="mark-named-entities">(Namen markieren)</pb-i18n></label>
                                     </span>
                                 </li>
                                 <li>
