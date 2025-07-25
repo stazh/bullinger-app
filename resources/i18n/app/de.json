@@ -169,6 +169,9 @@
             "date": "Datum",
             "recipients": "Empfänger",
             "recipients-place": "Empfangsort"
+        },
+        "resultsCount": {
+            "localities": "Gefundene Orte"
         }
     },
     "sent": "Gesendet",

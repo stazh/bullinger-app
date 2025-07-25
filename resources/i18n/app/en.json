@@ -169,6 +169,9 @@
             "date": "Date",
             "recipients": "Recipient",
             "recipients-place": "Place of Receipt"
+        },
+        "resultsCount": {
+            "localities": "Found Places"
         }
     },
     "sent": "Sent",

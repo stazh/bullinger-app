@@ -89,11 +89,11 @@
                     <!-- <pb-custom-form id="facets" url="api/show-facets/persons" event="pb-results-received" subscribe="grid" emit="grid" use-language="use-language" data-template="pages:parse-params"/> -->
                     <pb-custom-form class="facets" event="pb-results-received" auto-submit="[name=view]" subscribe="grid" emit="grid">
                         <div class="radios">
-                            <label>
-                                <input type="radio" name="view" checked="checked" value="all" data-template="templates:form-control"/> <pb-i18n key="registers.correspondenceAndMentions">(Korrespondenz und Erwähnungen)</pb-i18n>
+                            <label class="radio-option">
+                                <input class="radio-input" type="radio" name="view" checked="checked" value="all" data-template="templates:form-control"/> <pb-i18n key="registers.correspondenceAndMentions">(Korrespondenz und Erwähnungen)</pb-i18n>
                             </label>
-                            <label>
-                                <input type="radio" name="view" value="correspondence" data-template="templates:form-control"/> <pb-i18n key="registers.correspondence">(Korrespondenz)</pb-i18n>
+                            <label class="radio-option">
+                                <input class="radio-input" type="radio" name="view" value="correspondence" data-template="templates:form-control"/> <pb-i18n key="registers.correspondence">(Korrespondenz)</pb-i18n>
                             </label>
                         </div>
                     </pb-custom-form>

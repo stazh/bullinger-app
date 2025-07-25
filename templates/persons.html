@@ -15,11 +15,11 @@
                     <h1><pb-i18n key="menu.persons">(Personen)</pb-i18n></h1>
                     <pb-custom-form class="facets" event="pb-results-received" auto-submit="[name=view]" subscribe="grid" emit="grid">
                         <div class="radios">
-                            <label>
-                                <input type="radio" name="view" checked="checked" value="all" data-template="templates:form-control"/> <pb-i18n key="registers.correspondentsAndMentioned">(Korrespondenten und erwähnte Personen)</pb-i18n>
+                            <label class="radio-option">
+                                <input class="radio-input" type="radio" name="view" checked="checked" value="all" data-template="templates:form-control"/> <pb-i18n key="registers.correspondentsAndMentioned">(Korrespondenten und erwähnte Personen)</pb-i18n>
                             </label>
-                            <label>
-                                <input type="radio" name="view" value="correspondents" data-template="templates:form-control"/> <pb-i18n key="registers.correspondents">(Korrespondenten)</pb-i18n>
+                            <label class="radio-option">
+                                <input class="radio-input" type="radio" name="view" value="correspondents" data-template="templates:form-control"/> <pb-i18n key="registers.correspondents">(Korrespondenten)</pb-i18n>
                             </label>
                         </div>
                     </pb-custom-form>

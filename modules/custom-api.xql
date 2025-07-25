@@ -20,6 +20,7 @@ import module namespace roaster="http://e-editiones.org/roaster";
 
 import module namespace ext="http://teipublisher.com/ext-common" at "ext.xql";
 import module namespace pm-config="http://www.tei-c.org/tei-simple/pm-config" at "pm-config.xql";
+import module namespace mapping = "http://www.bullinger-digital.ch/mapping" at "mapping.xqm";
 
 declare variable $api:QUERY_OPTIONS := map {
     "leading-wildcard": "yes",
@@ -114,27 +115,53 @@ declare function api:persons-all-list-sort($entries as element()*, $sortBy as xs
             reverse($sorted)
 };
 
+(:~
+ : API function for listing localities, grouped by initial letter and filtered by correspondence/mention count.
+ : Accepts request parameters like "search", "category", "dir", "limit", "view".
+ :)
 declare function api:localities-all-list($request as map(*)) {
     let $search := normalize-space($request?parameters?search)
     let $letterParam := $request?parameters?category    
     let $sortDir := $request?parameters?dir
-    let $limit := $request?parameters?limit      
-    
-    let $places :=     
-            if ($search and $search != '') 
-            then (
-                $config:localities//tei:place[ft:query(., '(name:(' || $search || '*) OR mentioned-names:(' || $search || '*))', map {
-                    "leading-wildcard": "yes",
-                    "filter-rewrite": "yes"
-                })]
-            ) 
-            else (
-                $config:localities//tei:place[ft:query(., 'name:*', map {
-                    "leading-wildcard": "yes",
-                    "filter-rewrite": "yes"
-                })]
-            )            
-    
+    let $limit := $request?parameters?limit
+    let $view := $request?parameters?view
+    let $options := api:get-register-query-options()
+
+    (: --- Get localities mapping --- :)
+    let $mapping := mapping:get-localities()
+
+    (: --- Construct Lucene query based on view mode and search term --- :)
+    let $baseQuery :=
+        if ($view = "correspondence") then "name:*"
+        else "name:* OR mentioned-names:*"
+
+    let $query :=
+        if ($search != "") then
+            if ($view = "correspondence") then
+                "name:(" || $search || "*)"
+            else
+                "name:(" || $search || "*) OR mentioned-names:(" || $search || "*)"
+        else
+            $baseQuery 
+
+    (: --- Perform fulltext search on localities --- :)
+    let $rawPlaces := $config:localities//tei:place[
+        ft:query(., $query, $options)
+    ]
+
+    (: --- Filter localities based on usage mapping --- :)
+    let $places := 
+        for $place in $rawPlaces
+        let $id := $place/@xml:id/string()
+        let $placeCounts := $mapping($id)
+        where exists($placeCounts)
+        and (
+            ($view = "correspondence" and $placeCounts?corresp > 0) or
+            ($view != "correspondence" and $placeCounts?mentions > 0)
+        )
+        return $place
+
+    (: --- Group results by first uppercase letter of name field --- :)
     let $byLetter :=
         map:merge(
             for $place in $places
@@ -144,6 +171,8 @@ declare function api:localities-all-list($request as map(*)) {
             return
                 map:entry($letter, $place)
         )
+
+    (: --- Determine selected letter category --- :)
     let $letter :=
         if ((count($places) < $limit) or $search != '') then
             "[A-Z]"
@@ -152,14 +181,17 @@ declare function api:localities-all-list($request as map(*)) {
         else
             $letterParam
 
+    (: --- Select items to return based on selected letter category --- :)
     let $itemsToShow :=
         if ($letter = '[A-Z]') then
             $places
         else
             $byLetter($letter)
+
+    (: --- Build and return the final response map --- :)
     return
         map {
-            "items": api:output-locality($itemsToShow, $letter, $search),
+            "items": api:output-locality($itemsToShow, $letter, $search, $mapping),
             "categories":
                 if ((count($places) < $limit)  or $search != '') then
                     []
@@ -182,44 +214,93 @@ declare function api:localities-all-list($request as map(*)) {
         }
 };
 
-declare function api:output-locality($list, $letter as xs:string, $search as xs:string?) {
-    array {
-        for $place in $list
-            let $name := ft:field($place, 'name')[1]
-            return
-                if(string-length($name)>0)
-                then (                       
-                let $categoryParam := if ($letter = "[A-Z]") then substring($name, 1, 1) else $letter
-                let $params := "&amp;category=" || $categoryParam || "&amp;search=" || $search                           
-                let $coords := tokenize($place/tei:location/tei:geo)
-                return
-                    element span {
-                        attribute class { "place" },
-                        element span {
-                            element a {
-                                attribute href { $place/@xml:id || "?" || $params },
-                                $name
-                            }
-                        },
-                        if(string-length(normalize-space($place/tei:location/tei:geo)) > 0)
-                        then (
-                            element pb-geolocation {
-                                attribute latitude { $coords[1] },
-                                attribute longitude { $coords[2] },
-                                attribute label { $name},
-                                attribute emit {"map"},
-                                attribute event { "click" },
-                                attribute zoom { 9 },
+declare function api:output-locality($list, $letter as xs:string, $search as xs:string?, $mapping as map(*)) {
+    let $count := count($list)
+    return
+        array {
+            element p {
+                attribute class { "result-count" },
+                <pb-i18n key="registers.resultsCount.localities">Gefundene Orte</pb-i18n>,
+                text { ":" },
+                element span {
+                    attribute class { "result-count-output" },
+                    $count
+                }
+            },
+            element ul {
+                attribute class { "place-list" },
+                for $place in $list
+                    let $name := ft:field($place, 'name')[1]
+                    let $id := $place/@xml:id/string()
+                    let $placeCounts := $mapping($id)
+                    let $corresp := if (exists($placeCounts?corresp)) then $placeCounts?corresp else 0
+                    let $mentions := if (exists($placeCounts?mentions)) then $placeCounts?mentions else 0
+                    return
+                        if(string-length($name)>0)
+                        then (                       
+                        let $categoryParam := if ($letter = "[A-Z]") then substring($name, 1, 1) else $letter
+                        let $params := "&amp;category=" || $categoryParam || "&amp;search=" || $search                           
+                        let $coords := tokenize($place/tei:location/tei:geo)
+                        return
+                            element li {
+                                attribute class { "place-item" },
+                                element a {
+                                    attribute class { "place-link" },
+                                    attribute href { $place/@xml:id || "?" || $params },
+                                    element span {
+                                        attribute class { "place-name" },
+                                        $name
+                                    },
+                                    element span {
+                                        attribute class { "place-counts-tooltip" },
+                                        element span {
+                                            attribute class { "place-counts-label" },
+                                            element pb-i18n {
+                                                attribute key { "registers.correspondenceAndMentions" }
+                                            }
+                                        },
+                                        text { ": " },
+                                        element span {
+                                            attribute class { "place-counts-value" },
+                                            $mentions
+                                        },
+                                        element br {},
+                                        element span {
+                                            attribute class { "place-counts-label" },
+                                            element pb-i18n {
+                                                attribute key { "registers.correspondence" }
+                                            }
+                                        },
+                                        text { ": " },
+                                        element span {
+                                            attribute class { "place-counts-value" },
+                                            $corresp
+                                        }
+                                    },
+                                    if(string-length(normalize-space($place/tei:location/tei:geo)) > 0)
+                                    then (
+                                        element pb-geolocation {
+                                            attribute class { "place-geolocation" },
+                                            attribute latitude { $coords[1] },
+                                            attribute longitude { $coords[2] },
+                                            attribute label { $name},
+                                            attribute emit { "map" },
+                                            attribute event { "click" },
+                                            attribute zoom { 9 },
 
-                                element iron-icon {
-                                    attribute icon {"maps:map" }
+                                            element iron-icon {
+                                                attribute class { "place-icon" },
+                                                attribute icon { "maps:place" },
+                                                attribute fill { "currentColor" }
+                                            }
+                                        }
+                                    )
+                                    else ()
                                 }
                             }
-                        )
-                        else ()
-                    }
-                ) else()
-    }
+                        ) else()
+            }
+        }
 };
 
 declare function api:localities-all($request as map(*)) {    
