@@ -1,5 +1,53 @@
+/**
+ * Synchronizes the checked state of the given checkboxes
+ * based on whether the <body> element has the class 'colorize-named-entities'.
+ * 
+ * @param {HTMLInputElement[]} checkboxes - Array of checkbox elements to synchronize
+ */
+function syncEntityCheckboxesWithBody(checkboxes) {
+  const isChecked = document.body.classList.contains('colorize-named-entities');
+
+  checkboxes.forEach(cb => {
+    if (cb && cb.checked !== isChecked) {
+      cb.checked = isChecked;
+    }
+  });
+}
+
+/**
+ * Observes changes to <body class="..."> and synchronizes checkboxes accordingly.
+ * Waits for the shadow DOM checkbox to become available before starting observation.
+ */
+function observeBodyClassChangeWithRetry() {
+  const lightCheckbox = document.querySelector('.js-entity-checkbox');
+  const shadowHost = document.querySelector('pb-view#metadata');
+
+  const retryInterval = setInterval(() => {
+    const shadowCheckbox = shadowHost?.shadowRoot?.querySelector('.js-entity-checkbox');
+
+    if (shadowCheckbox) {
+      clearInterval(retryInterval);
+
+      const checkboxes = [lightCheckbox, shadowCheckbox].filter(Boolean);
+
+      // Initial sync
+      syncEntityCheckboxesWithBody(checkboxes);
+
+      // Observe body class changes and re-sync
+      const observer = new MutationObserver(() => {
+        syncEntityCheckboxesWithBody(checkboxes);
+      });
+
+      observer.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['class']
+      });
+    }
+  }, 100);
+}
+
 window.addEventListener('DOMContentLoaded', function() {
-    const toggle = document.querySelector('[name=lang-toggle]')
+    const toggle = document.querySelector('[name=lang-toggle]');
 
     function applyLangColors () {
         const view = document.getElementById('view1')
@@ -31,7 +79,7 @@ window.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    toggle.addEventListener('change', applyLangColors)
+    toggle.addEventListener('change', applyLangColors);
 
     pbEvents.subscribe('pb-update', 'transcription', ev => {
         applyLangColors()
@@ -80,7 +128,6 @@ window.addEventListener('DOMContentLoaded', function() {
          });
     });
 
-
     pbEvents.subscribe('pb-update', 'transcription', ev => {
         const view = document.getElementById('view1');
 
@@ -124,6 +171,7 @@ window.addEventListener('DOMContentLoaded', function() {
                 pbEvents.emit('pb-show-annotation', 'facsimile', { coordinates: null });
             }
         });
-    })
-});
+    });
 
+    observeBodyClassChangeWithRetry();
+});
