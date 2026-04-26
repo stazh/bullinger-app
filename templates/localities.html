@@ -64,8 +64,18 @@
         <script>
             window.addEventListener('WebComponentsReady', function() {
                 const splitList = document.querySelector('pb-split-list');
+
+                function scrollItemsToTop() {
+                    const items = splitList.shadowRoot?.querySelector('#items');
+            
+                    if (items) {
+                        items.scrollTop = 0;
+                    }
+                }
             
                 pbEvents.subscribe('pb-end-update', 'transcription', function() {
+                    scrollItemsToTop();
+
                     pbEvents.emit('pb-update', 'map', {
                         root: splitList
                     });
