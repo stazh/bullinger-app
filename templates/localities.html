@@ -36,6 +36,10 @@
                         emit="transcription" 
                         subscribe="transcription" 
                         data-template="pages:parse-params"/>
+                    <button id="register-scroll-top" class="register-scroll-top" type="button"
+                        data-i18n="[title]registers.scrollTop;[aria-label]registers.scrollTop">
+                        <iron-icon icon="icons:expand-less"></iron-icon>
+                    </button>
                 </div>
                 <pb-leaflet-map id="map" subscribe="map" emit="map" zoom="9" fit-markers="" cluster="" latitude="50" longitude="20">
                     <pb-map-layer show=""
@@ -64,6 +68,7 @@
         <script>
             window.addEventListener('WebComponentsReady', function() {
                 const splitList = document.querySelector('pb-split-list');
+                const scrollTopButton = document.getElementById('register-scroll-top');
 
                 function scrollItemsToTop() {
                     const items = splitList.shadowRoot?.querySelector('#items');
@@ -71,6 +76,10 @@
                     if (items) {
                         items.scrollTop = 0;
                     }
+                }
+
+                if (scrollTopButton) {
+                    scrollTopButton.addEventListener('click', scrollItemsToTop);
                 }
             
                 pbEvents.subscribe('pb-end-update', 'transcription', function() {

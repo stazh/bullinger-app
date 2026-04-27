@@ -172,7 +172,8 @@
         },
         "resultsCount": {
             "localities": "Gefundene Orte"
-        }
+        },
+        "scrollTop": "Zum Anfang der Ergebnisliste scrollen"
     },
     "sent": "Gesendet",
     "received": "Empfangen",

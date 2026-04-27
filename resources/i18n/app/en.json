@@ -172,7 +172,8 @@
         },
         "resultsCount": {
             "localities": "Found Places"
-        }
+        },
+        "scrollTop": "Scroll to top of results"
     },
     "sent": "Sent",
     "received": "Received",

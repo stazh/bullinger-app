@@ -992,10 +992,38 @@ pb-view {
     grid-template-rows: auto auto minmax(0, 1fr);
     height: 100%;
     min-height: 0;
+    position: relative;
 }
 
 .register__localities .register-list pb-custom-form {
     min-height: 0;
+}
+
+.register__localities .register-scroll-top {
+    align-items: center;
+    background: transparent;
+    bottom: 0;
+    border: none;
+    color: var(--pb-link-color);
+    cursor: pointer;
+    display: inline-flex;
+    height: 2rem;
+    justify-content: center;
+    padding: 0;
+    position: absolute;
+    right: 0.2rem;
+    width: 2rem;
+    z-index: 20;
+}
+
+.register__localities .register-scroll-top:hover {
+    color: var(--bb-beige-dark);
+}
+
+.register__localities .register-scroll-top iron-icon {
+    --iron-icon-width: 24px;
+    --iron-icon-height: 24px;
+    --iron-icon-fill-color: currentColor;
 }
 
 .register__localities pb-split-list.register-split-list {
@@ -1011,7 +1039,7 @@ pb-view {
     display: block;
     min-height: 0;
     overflow-y: auto;
-    padding-bottom: 1rem;
+    padding-bottom: 3rem;
     box-sizing: border-box;
 }
 
