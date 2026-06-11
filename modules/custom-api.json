@@ -668,7 +668,7 @@
         "/api/localities-all-list": {
             "get": {
                 "summary": "List localities",
-                "description": "Retrieve list of pllocalitiesaces in format required by pb-split-list",
+                "description": "Retrieve list of places/localities in format required by pb-split-list",
                 "operationId": "custom:localities-all-list",
                 "parameters": [
 					{
@@ -678,14 +678,6 @@
 							"type": "string"
 						}
 					},					
-                    {
-                        "name": "dir",
-                        "in": "query",
-                        "schema": {
-                            "type": "string",
-                            "default": "asc"
-                        }
-                    },					
                     {
                         "name": "limit",
                         "in": "query",
@@ -706,9 +698,23 @@
                         "in": "query",
                         "schema": {
                             "type": "string",
-                            "default": ""
+                            "default": "all"
                         }
-                    }
+                    },
+                    {
+  						"name": "correspSent",
+  						"in": "query",
+  						"schema": {
+    						"type": "string"
+  						}
+					},
+					{
+						"name": "correspReceived",
+						"in": "query",
+						"schema": {
+							"type": "string"
+						}
+					}
                 ],
                 "responses": {
                     "200": {

@@ -941,6 +941,15 @@ pb-view {
     font-weight: bold;
 }
 
+.place-list .place-counts-subitem {
+    display: inline-block;
+}
+
+.place-list .place-counts-bullet {
+    display: inline-block;
+    width: 0.8rem;
+}
+
 .place-list .place-geolocation {
     display: inline-block;
     flex-shrink: 0;
@@ -1059,6 +1068,48 @@ pb-view {
 
 .register__localities .register-list pb-custom-form.facets {
     margin-bottom: 0;
+}
+
+.register__localities .register-list pb-custom-form.facets .radios--main {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.register__localities .register-list pb-custom-form.facets .radio-option-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.register__localities .register-list pb-custom-form.facets .radio-option,
+.register__localities .register-list pb-custom-form.facets .checkbox-option {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.register__localities .register-list pb-custom-form.facets .checkbox-option {
+    color: var(--bb-dark-gray);
+    font-size: 0.95rem;
+}
+
+.register__localities .register-list pb-custom-form.facets .checkbox-input {
+    accent-color: var(--bb-beige);
+}
+
+.register__localities .register-list pb-custom-form.facets .checkboxes--subfilter {
+    margin-top: 0.4rem;
+    margin-left: 1.45rem;
+    padding-left: 0.75rem;
+    border-left: 2px solid var(--bb-light-gray);
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.register__localities .register-list pb-custom-form.facets .checkboxes--subfilter.is-inactive {
+    opacity: 0.55;
 }
 
 .register__localities pb-leaflet-map {

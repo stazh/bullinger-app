@@ -138,6 +138,10 @@
         "correspondents": "Correspondents",
         "correspondentsAndMentioned": "Correspondents and mentioned persons",
         "correspondence": "Correspondence",
+        "correspondencePlaceOfDispatch": "Place of Dispatch",
+        "correspondencePlaceOfReceipt": "Place of Receipt",
+        "correspondencePlacesOfDispatch": "Places of Dispatch",
+        "correspondencePlacesOfReceipt": "Places of Receipt",
         "correspondenceAndMentions": "Correspondence and mentions",
         "all": "All",
         "archives": {

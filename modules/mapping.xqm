@@ -28,10 +28,14 @@ declare function mapping:init-localities() as map(*) {
         for $item in $items
         let $placeID := $item/@xml:id/string()
         where exists($placeID)
-        let $corresp := xs:integer($item/*[@type = 'corresp']/string())
-        let $mentions := xs:integer($item/*[@type = 'mentions']/string())
+        let $corresp := xs:integer(($item/*[@type = 'corresp']/string(), "0")[1])
+        let $sent := xs:integer(($item/*[@type = 'sent']/string(), "0")[1])
+        let $received := xs:integer(($item/*[@type = 'received']/string(), "0")[1])
+        let $mentions := xs:integer(($item/*[@type = 'mentions']/string(), "0")[1])
         return map:entry($placeID, map {
             "corresp": $corresp,
+            "sent": $sent,
+            "received": $received,
             "mentions": $mentions
         })
     )

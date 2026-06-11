@@ -138,6 +138,10 @@
         "correspondents": "Korrespondenten",
         "correspondentsAndMentioned": "Korrespondenten und erwähnte Personen",
         "correspondence": "Korrespondenz",
+        "correspondencePlaceOfDispatch": "Absendeort",
+        "correspondencePlaceOfReceipt": "Empfangsort",
+        "correspondencePlacesOfDispatch": "Absendeorte",
+        "correspondencePlacesOfReceipt": "Empfangsorte",
         "correspondenceAndMentions": "Korrespondenz und Erwähnungen",
         "all": "Alle",
         "archives": {

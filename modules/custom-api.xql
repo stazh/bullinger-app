@@ -117,14 +117,27 @@ declare function api:persons-all-list-sort($entries as element()*, $sortBy as xs
 
 (:~
  : API function for listing localities, grouped by initial letter and filtered by correspondence/mention count.
- : Accepts request parameters like "search", "category", "dir", "limit", "view".
+ : Accepts request parameters like "search", "category", "limit", "view", "correspSent", "correspReceived".
  :)
 declare function api:localities-all-list($request as map(*)) {
     let $search := normalize-space($request?parameters?search)
-    let $letterParam := $request?parameters?category    
-    let $sortDir := $request?parameters?dir
-    let $limit := $request?parameters?limit
-    let $view := $request?parameters?view
+    let $letterParam := $request?parameters?category
+    let $limit :=
+        if ($request?parameters?limit castable as xs:integer) then
+            xs:integer($request?parameters?limit)
+        else
+            50
+    let $view :=
+        if (normalize-space($request?parameters?view) = "correspondence") then
+            "correspondence"
+        else
+            "all"
+    let $sentSelected := $request?parameters?correspSent = "1"
+    let $receivedSelected := $request?parameters?correspReceived = "1"
+
+    let $allCorrespPlaces := 
+        ($sentSelected and $receivedSelected) or not($sentSelected or $receivedSelected)
+
     let $options := api:get-register-query-options()
 
     (: --- Get localities mapping --- :)
@@ -149,15 +162,22 @@ declare function api:localities-all-list($request as map(*)) {
         ft:query(., $query, $options)
     ]
 
-    (: --- Filter localities based on usage mapping --- :)
+    (: --- Filter localities based on selected register view and correspondence role --- :)
     let $places := 
         for $place in $rawPlaces
         let $id := $place/@xml:id/string()
         let $placeCounts := $mapping($id)
         where exists($placeCounts)
         and (
-            ($view = "correspondence" and $placeCounts?corresp > 0) or
-            ($view != "correspondence" and $placeCounts?mentions > 0)
+            if ($view = "correspondence") then
+                if ($allCorrespPlaces) then
+                    $placeCounts?corresp > 0
+                else if ($sentSelected) then
+                    $placeCounts?sent > 0
+                else
+                    $placeCounts?received > 0
+            else
+                $placeCounts?mentions > 0
         )
         return $place
 
@@ -166,8 +186,8 @@ declare function api:localities-all-list($request as map(*)) {
         map:merge(
             for $place in $places
             let $name := ft:field($place, 'name')[1]
-            order by $name
-            group by $letter := substring($name, 1, 1) => upper-case()
+            order by lower-case($name)
+            group by $letter := upper-case(substring($name, 1, 1))
             return
                 map:entry($letter, $place)
         )
@@ -297,6 +317,8 @@ declare function api:output-locality($list, $letter as xs:string, $search as xs:
                 let $id := $place/@xml:id/string()
                 let $placeCounts := $mapping($id)
                 let $corresp := if (exists($placeCounts?corresp)) then $placeCounts?corresp else 0
+                let $sent := if (exists($placeCounts?sent)) then $placeCounts?sent else 0
+                let $received := if (exists($placeCounts?received)) then $placeCounts?received else 0
                 let $mentions := if (exists($placeCounts?mentions)) then $placeCounts?mentions else 0
                 let $geo := normalize-space($place/tei:location/tei:geo)
                 let $coords := tokenize($geo)
@@ -375,7 +397,48 @@ declare function api:output-locality($list, $letter as xs:string, $search as xs:
                                         element span {
                                             attribute class { "place-counts-value" },
                                             $corresp
-                                        }
+                                        },
+
+                                        if ($corresp > 0) then (
+                                            element br {},
+                                            element span {
+                                                attribute class { "place-counts-subitem" },
+                                                element span {
+                                                    attribute class { "place-counts-bullet" },
+                                                    text { "•" }
+                                                },
+                                                element span {
+                                                    attribute class { "place-counts-label" },
+                                                    element pb-i18n {
+                                                        attribute key { "registers.correspondencePlaceOfDispatch" }
+                                                    }
+                                                },
+                                                text { ": " },
+                                                element span {
+                                                    attribute class { "place-counts-value" },
+                                                    $sent
+                                                }
+                                            },
+                                            element br {},
+                                            element span {
+                                                attribute class { "place-counts-subitem" },
+                                                element span {
+                                                    attribute class { "place-counts-bullet" },
+                                                    text { "•" }
+                                                },
+                                                element span {
+                                                    attribute class { "place-counts-label" },
+                                                    element pb-i18n {
+                                                        attribute key { "registers.correspondencePlaceOfReceipt" }
+                                                    }
+                                                },
+                                                text { ": " },
+                                                element span {
+                                                    attribute class { "place-counts-value" },
+                                                    $received
+                                                }
+                                            }
+                                        ) else ()
                                     }
                                 }
                             }
