@@ -235,22 +235,59 @@ declare function api:output-locality($list, $letter as xs:string, $search as xs:
                     let $placeCounts := $mapping($id)
                     let $corresp := if (exists($placeCounts?corresp)) then $placeCounts?corresp else 0
                     let $mentions := if (exists($placeCounts?mentions)) then $placeCounts?mentions else 0
+                    let $geo := normalize-space($place/tei:location/tei:geo)
+                    let $coords := tokenize($geo)
                     return
                         if(string-length($name)>0)
                         then (                       
                         let $categoryParam := if ($letter = "[A-Z]") then substring($name, 1, 1) else $letter
-                        let $params := "&amp;category=" || $categoryParam || "&amp;search=" || $search                           
-                        let $coords := tokenize($place/tei:location/tei:geo)
+                        let $params := "&amp;category=" || $categoryParam || "&amp;search=" || $search
                         return
                             element li {
-                                attribute class { "place-item" },
-                                element a {
-                                    attribute class { "place-link" },
-                                    attribute href { $place/@xml:id || "?" || $params },
+                                attribute class { "js-place-item place-item" },
+                            
+                                if (count($coords) = 2) then
+                                    element pb-geolocation {
+                                        attribute class { "place-geolocation" },
+                                        attribute latitude { $coords[1] },
+                                        attribute longitude { $coords[2] },
+                                        attribute label { $name },
+                                        attribute data-place-id { $id },
+                                        attribute emit { "map" },
+                                        attribute event { "click" },
+                                        attribute zoom { 12 },
+                            
+                                        element iron-icon {
+                                            attribute class { "place-icon" },
+                                            attribute icon { "maps:place" },
+                                            attribute fill { "currentColor" }
+                                        }
+                                    }
+                                else (
                                     element span {
-                                        attribute class { "place-name" },
-                                        $name
+                                        attribute class { "place-geolocation place-geolocation--disabled" },
+                                
+                                        element iron-icon {
+                                            attribute class { "no-geolocation-icon" },
+                                            attribute icon { "social:public" },
+                                            attribute fill { "currentColor" }
+                                        }
+                                    }
+                                ),
+                            
+                                element div {
+                                    attribute class { "place-main" },
+                            
+                                    element a {
+                                        attribute class { "js-place-link place-link" },
+                                        attribute href { $place/@xml:id || "?" || $params },
+                            
+                                        element span {
+                                            attribute class { "place-name" },
+                                            $name
+                                        }
                                     },
+                            
                                     element span {
                                         attribute class { "place-counts-tooltip" },
                                         element span {
@@ -276,57 +313,13 @@ declare function api:output-locality($list, $letter as xs:string, $search as xs:
                                             attribute class { "place-counts-value" },
                                             $corresp
                                         }
-                                    },
-                                    if(string-length(normalize-space($place/tei:location/tei:geo)) > 0)
-                                    then (
-                                        element pb-geolocation {
-                                            attribute class { "place-geolocation" },
-                                            attribute latitude { $coords[1] },
-                                            attribute longitude { $coords[2] },
-                                            attribute label { $name},
-                                            attribute emit { "map" },
-                                            attribute event { "click" },
-                                            attribute zoom { 9 },
-
-                                            element iron-icon {
-                                                attribute class { "place-icon" },
-                                                attribute icon { "maps:place" },
-                                                attribute fill { "currentColor" }
-                                            }
-                                        }
-                                    )
-                                    else ()
+                                    }
                                 }
                             }
                         ) else()
             }
         }
 };
-
-declare function api:localities-all($request as map(*)) {    
-    let $places := $config:localities//tei:place[ft:query(., 'name:*', map {
-                    "leading-wildcard": "yes",
-                    "filter-rewrite": "yes"
-                })]
-    return
-        array {
-            for $place in $places
-            return
-                if(string-length(normalize-space($place/tei:location/tei:geo)) > 0)
-                then (
-                    let $tokenized := tokenize($place/tei:location/tei:geo)                    
-                    let $name := ft:field($place, 'name')[1]
-                    return
-                        map {
-                            "latitude":$tokenized[1],
-                            "longitude":$tokenized[2],
-                            "label":$name,
-                            "id":$place/@xml:id/string()
-                        }
-                ) else ()
-            }
-};
-
 
 declare function api:sort-letters($entries as element()*, $sortBy as xs:string, $dir as xs:string) {
     let $sorted :=

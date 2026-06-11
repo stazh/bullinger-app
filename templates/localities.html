@@ -2,7 +2,7 @@
     <head data-template="lib:include" data-template-path="templates/header.html">
         <title data-target="title-template" data-template-page="localities">Bullinger Digital: Orte</title>
         <meta data-target="title-template" name="pb-template" content="localities.html"/>
-        <script data-target="script-preload" type="module" src="pb-leaflet-map.js" data-template="pages:load-components"></script>
+        <script data-target="script-preload" type="module" src="pb-leaflet-map.js" data-template="pages:load-components"/>
     </head>
 
     <body>
@@ -37,7 +37,7 @@
                         subscribe="transcription" 
                         data-template="pages:parse-params"/>
                 </div>
-                <pb-leaflet-map id="map" subscribe="map" emit="map" zoom="3" cluster="" latitude="50" longitude="20">
+                <pb-leaflet-map id="map" subscribe="map" emit="map" zoom="9" fit-markers="" cluster="" latitude="50" longitude="20">
                     <pb-map-layer show=""
                         base="" 
                         label="Mapbox OSM"
@@ -47,7 +47,6 @@
                         attribution="© Mapbox © OpenStreetMap">
                     </pb-map-layer>
                 </pb-leaflet-map>
-
 
                 <!-- pb-leaflet-map id="map" subscribe="map" emit="map" zoom="10" cluster=""
                     latitude="47.69732" longitude="8.63493">
@@ -64,27 +63,23 @@
         <footer data-template="templates:include" data-template-path="templates/footer.html"/>
         <script>
             window.addEventListener('WebComponentsReady', function() {
-                const map = document.querySelector('pb-leaflet-map');
-
-                pbEvents.subscribe('pb-page-ready', null, function() {
-                    const pbPage = document.querySelector('pb-page');
-                    const endpoint = pbPage.getEndpoint();
-                    const url = endpoint + '/api/localities-all';
-
-                    fetch(url)
-                        .then(function(response) {
-                            return response.json();
-                        })
-                        .then(function(json) {
-                            pbEvents.emit('pb-update-map', 'map', json);
-                        });
+                const splitList = document.querySelector('pb-split-list');
+            
+                pbEvents.subscribe('pb-end-update', 'transcription', function() {
+                    pbEvents.emit('pb-update', 'map', {
+                        root: splitList
+                    });
                 });
-
+            
                 pbEvents.subscribe('pb-leaflet-marker-click', 'map', function(ev) {
-                    const label = ev.detail.element.label;
-                    const key = ev.detail.element.id;
-                    const category = label.substring(0, 1);
-                    window.location = key + '?category=' + category;
+                    const geo = ev.detail.element;
+                    const item = geo.closest('.js-place-item');
+                    const link = item ? item.querySelector('.js-place-link') : null;
+                    const href = link ? link.getAttribute('href') : null;
+                
+                    if (href) {
+                        window.location = href;
+                    }
                 });
             });
         </script>
