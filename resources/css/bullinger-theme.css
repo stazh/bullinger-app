@@ -994,6 +994,45 @@ pb-view {
     min-height: 0;
 }
 
+.register__localities .register-results {
+    position: relative;
+    min-height: 0;
+    height: 100%;
+}
+
+.register__localities .register-loading {
+    align-items: center;
+    background: rgba(255, 255, 255, 0.75);
+    bottom: 0;
+    display: none;
+    justify-content: center;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 20;
+}
+
+.register__localities .register-list.is-loading .register-loading {
+    display: flex;
+}
+
+.register__localities .register-loading iron-icon {
+    --iron-icon-height: 32px;
+    --iron-icon-width: 32px;
+    animation: locality-loading-spin 1s linear infinite;
+    color: var(--bb-beige-dark);
+}
+
+@keyframes locality-loading-spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 .register__localities .register-list {
     --pb-categorized-list-columns: 1;
     display: grid;
@@ -1048,7 +1087,7 @@ pb-view {
     display: block;
     min-height: 0;
     overflow-y: auto;
-    padding-bottom: 3rem;
+    padding-bottom: 5rem;
     box-sizing: border-box;
 }
 

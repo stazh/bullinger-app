@@ -1,5 +1,6 @@
 window.addEventListener('WebComponentsReady', function () {
   // Main UI elements used for filtering, list updates and map interaction
+  const registerList = document.querySelector('.register-list');
   const splitList = document.querySelector('pb-split-list');
   const viewAll = document.querySelector('input[name="view"][value="all"]');
   const viewCorrespondence = document.querySelector(
@@ -14,6 +15,7 @@ window.addEventListener('WebComponentsReady', function () {
 
   // Abort if required elements for filtering are not available
   if (
+    !registerList ||
     !splitList ||
     !viewAll ||
     !viewCorrespondence ||
@@ -92,8 +94,15 @@ window.addEventListener('WebComponentsReady', function () {
     scrollTopButton.addEventListener('click', scrollItemsToTop);
   }
 
+  // Show a loading overlay while the locality list is being updated
+  pbEvents.subscribe('pb-start-update', 'transcription', function () {
+    registerList.classList.add('is-loading');
+  });
+
   // Synchronize markers on the map after the update finished
   pbEvents.subscribe('pb-end-update', 'transcription', function () {
+    // Hide the loading overlay and reset scroll position
+    registerList.classList.remove('is-loading');
     scrollItemsToTop();
 
     pbEvents.emit('pb-update', 'map', {

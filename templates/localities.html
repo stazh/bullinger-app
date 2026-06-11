@@ -60,13 +60,18 @@
                             <paper-icon-button icon="search" slot="suffix"/>
                         </paper-input>
                     </pb-custom-form>
-                    <pb-split-list class="register-split-list" 
-                        url="api/localities-all-list" 
-                        subforms="#options,#filter" 
-                        selected="A" 
-                        emit="transcription" 
-                        subscribe="transcription" 
-                        data-template="pages:parse-params"/>
+                    <div class="register-results">
+                        <pb-split-list class="register-split-list" 
+                            url="api/localities-all-list" 
+                            subforms="#options,#filter" 
+                            selected="A" 
+                            emit="transcription" 
+                            subscribe="transcription" 
+                            data-template="pages:parse-params"/>
+                        <div class="register-loading" aria-hidden="true">
+                            <iron-icon icon="icons:refresh"></iron-icon>
+                        </div>
+                    </div>
                     <button id="register-scroll-top" class="register-scroll-top" type="button"
                         data-i18n="[title]registers.scrollTop;[aria-label]registers.scrollTop">
                         <iron-icon icon="icons:expand-less"></iron-icon>
