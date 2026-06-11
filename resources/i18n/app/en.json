@@ -143,6 +143,7 @@
         "correspondencePlacesOfDispatch": "Places of Dispatch",
         "correspondencePlacesOfReceipt": "Places of Receipt",
         "correspondenceAndMentions": "Correspondence and mentions",
+        "mentions": "Mentions",
         "all": "All",
         "archives": {
             "name": "Archive",

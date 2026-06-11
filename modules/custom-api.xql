@@ -128,15 +128,17 @@ declare function api:localities-all-list($request as map(*)) {
         else
             50
     let $view :=
-        if (normalize-space($request?parameters?view) = "correspondence") then
-            "correspondence"
-        else
-            "all"
-    let $sentSelected := $request?parameters?correspSent = "1"
-    let $receivedSelected := $request?parameters?correspReceived = "1"
+        let $value := normalize-space($request?parameters?view)
+        return
+            if ($value = ("correspondence", "mentions")) then
+                $value
+            else
+                "all"
+    let $correspSentSelected := $request?parameters?correspSent = "1"
+    let $correspReceivedSelected := $request?parameters?correspReceived = "1"
 
     let $allCorrespPlaces := 
-        ($sentSelected and $receivedSelected) or not($sentSelected or $receivedSelected)
+        ($correspSentSelected and $correspReceivedSelected) or not($correspSentSelected or $correspReceivedSelected)
 
     let $options := api:get-register-query-options()
 
@@ -145,13 +147,19 @@ declare function api:localities-all-list($request as map(*)) {
 
     (: --- Construct Lucene query based on view mode and search term --- :)
     let $baseQuery :=
-        if ($view = "correspondence") then "name:*"
-        else "name:* OR mentioned-names:*"
+        if ($view = "correspondence") then 
+            "name:*"
+        else if ($view = "mentions") then 
+            "mentioned-names:*"
+        else 
+            "name:* OR mentioned-names:*"
 
     let $query :=
         if ($search != "") then
             if ($view = "correspondence") then
                 "name:(" || $search || "*)"
+            else if ($view = "mentions") then
+                "mentioned-names:(" || $search || "*)"
             else
                 "name:(" || $search || "*) OR mentioned-names:(" || $search || "*)"
         else
@@ -172,12 +180,14 @@ declare function api:localities-all-list($request as map(*)) {
             if ($view = "correspondence") then
                 if ($allCorrespPlaces) then
                     $placeCounts?corresp > 0
-                else if ($sentSelected) then
-                    $placeCounts?sent > 0
+                else if ($correspSentSelected) then
+                    $placeCounts?correspSent > 0
                 else
-                    $placeCounts?received > 0
-            else
+                    $placeCounts?correspReceived > 0
+            else if ($view = "mentions") then
                 $placeCounts?mentions > 0
+            else
+                $placeCounts?correspAndMentions > 0
         )
         return $place
 
@@ -317,8 +327,9 @@ declare function api:output-locality($list, $letter as xs:string, $search as xs:
                 let $id := $place/@xml:id/string()
                 let $placeCounts := $mapping($id)
                 let $corresp := if (exists($placeCounts?corresp)) then $placeCounts?corresp else 0
-                let $sent := if (exists($placeCounts?sent)) then $placeCounts?sent else 0
-                let $received := if (exists($placeCounts?received)) then $placeCounts?received else 0
+                let $correspSent := if (exists($placeCounts?correspSent)) then $placeCounts?correspSent else 0
+                let $correspReceived := if (exists($placeCounts?correspReceived)) then $placeCounts?correspReceived else 0
+                let $correspAndMentions := if (exists($placeCounts?correspAndMentions)) then $placeCounts?correspAndMentions else 0
                 let $mentions := if (exists($placeCounts?mentions)) then $placeCounts?mentions else 0
                 let $geo := normalize-space($place/tei:location/tei:geo)
                 let $coords := tokenize($geo)
@@ -384,7 +395,7 @@ declare function api:output-locality($list, $letter as xs:string, $search as xs:
                                         text { ": " },
                                         element span {
                                             attribute class { "place-counts-value" },
-                                            $mentions
+                                            $correspAndMentions
                                         },
                                         element br {},
                                         element span {
@@ -416,7 +427,7 @@ declare function api:output-locality($list, $letter as xs:string, $search as xs:
                                                 text { ": " },
                                                 element span {
                                                     attribute class { "place-counts-value" },
-                                                    $sent
+                                                    $correspSent
                                                 }
                                             },
                                             element br {},
@@ -435,10 +446,23 @@ declare function api:output-locality($list, $letter as xs:string, $search as xs:
                                                 text { ": " },
                                                 element span {
                                                     attribute class { "place-counts-value" },
-                                                    $received
+                                                    $correspReceived
                                                 }
                                             }
-                                        ) else ()
+                                        ) else (),
+
+                                        element br {},
+                                        element span {
+                                            attribute class { "place-counts-label" },
+                                            element pb-i18n {
+                                                attribute key { "registers.mentions" }
+                                            }
+                                        },
+                                        text { ": " },
+                                        element span {
+                                            attribute class { "place-counts-value" },
+                                            $mentions
+                                        }
                                     }
                                 }
                             }
@@ -791,6 +815,15 @@ declare function api:locality-filter($filter as xs:string?, $key as xs:string, $
     let $letters := switch ($view)
         case "correspondence" return
             $all-letters[ft:query(.//tei:text, 'place:' || $key , $options)]
+        case "mentions" return
+            $all-letters[
+                ft:query(.//tei:text, 'mentioned-places:' || $key, $options)
+            ][
+                .//tei:placeName[
+                    @ref = $key
+                    and not(ancestor::tei:correspAction)
+                ]
+            ]
         default return
             $all-letters[ft:query(.//tei:text, 'place:' || $key || ' OR mentioned-places:' || $key , $options)]
     let $result := 

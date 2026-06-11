@@ -143,6 +143,7 @@
         "correspondencePlacesOfDispatch": "Absendeorte",
         "correspondencePlacesOfReceipt": "Empfangsorte",
         "correspondenceAndMentions": "Korrespondenz und Erwähnungen",
+        "mentions": "Erwähnungen",
         "all": "Alle",
         "archives": {
             "name": "Archiv",

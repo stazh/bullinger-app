@@ -6,6 +6,9 @@ window.addEventListener('WebComponentsReady', function () {
   const viewCorrespondence = document.querySelector(
     'input[name="view"][value="correspondence"]',
   );
+  const viewMentions = document.querySelector(
+    'input[name="view"][value="mentions"]',
+  );
   const sentCheckbox = document.querySelector('input[name="correspSent"]');
   const receivedCheckbox = document.querySelector(
     'input[name="correspReceived"]',
@@ -19,6 +22,7 @@ window.addEventListener('WebComponentsReady', function () {
     !splitList ||
     !viewAll ||
     !viewCorrespondence ||
+    !viewMentions ||
     !sentCheckbox ||
     !receivedCheckbox ||
     !subfilter
@@ -43,7 +47,7 @@ window.addEventListener('WebComponentsReady', function () {
   }
 
   // "Correspondence and mentions":
-  // deactivate both subfilters and reload the list
+  // deactivate both correspondence subfilters and reload the list
   viewAll.addEventListener('change', function () {
     if (viewAll.checked) {
       setBothCorrespCheckboxes(false);
@@ -62,15 +66,27 @@ window.addEventListener('WebComponentsReady', function () {
     }
   });
 
+  // "Mentions":
+  // deactivate both correspondence subfilters and reload the list
+  viewMentions.addEventListener('change', function () {
+    if (viewMentions.checked) {
+      setBothCorrespCheckboxes(false);
+      updateSubfilterState();
+      submitFilter();
+    }
+  });
+
   // Switch to the correspondence view when selecting a correspondence role checkbox
   [sentCheckbox, receivedCheckbox].forEach(function (checkbox) {
     checkbox.addEventListener('change', function (ev) {
       viewAll.checked = false;
+      viewMentions.checked = false;
       viewCorrespondence.checked = true;
 
       // Keep at least one correspondence role filter selected
       if (!sentCheckbox.checked && !receivedCheckbox.checked) {
         ev.target.checked = true;
+        return;
       }
 
       updateSubfilterState();

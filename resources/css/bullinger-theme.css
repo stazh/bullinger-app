@@ -1087,7 +1087,7 @@ pb-view {
     display: block;
     min-height: 0;
     overflow-y: auto;
-    padding-bottom: 5rem;
+    padding-bottom: 7rem;
     box-sizing: border-box;
 }
 

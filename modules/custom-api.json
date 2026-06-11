@@ -698,7 +698,8 @@
                         "in": "query",
                         "schema": {
                             "type": "string",
-                            "default": "all"
+                            "default": "all",
+                            "enum": ["all", "correspondence", "mentions"]
                         }
                     },
                     {
@@ -806,7 +807,8 @@
                         "in": "query",
                         "schema": {
                             "type": "string",
-                            "default": ""
+                            "default": "all",
+                            "enum": ["all", "correspondence", "mentions"]
                         }
                     },
 					{
