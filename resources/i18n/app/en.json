@@ -173,7 +173,12 @@
         "resultsCount": {
             "localities": "Found Places"
         },
-        "scrollTop": "Scroll to top of results"
+        "scrollTop": "Scroll to top of results",
+        "localityType": {
+            "settlement": "Place",
+            "district": "District/Region",
+            "country": "Country"
+        }
     },
     "sent": "Sent",
     "received": "Received",

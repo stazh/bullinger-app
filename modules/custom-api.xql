@@ -214,8 +214,70 @@ declare function api:localities-all-list($request as map(*)) {
         }
 };
 
+(:~
+ : Return the i18n key for the locality type represented by the given place.
+ : The type is derived from the available TEI child elements, preferring
+ : settlement over district and district over country.
+ :)
+declare function local:locality-type-key($place as element(tei:place)) as xs:string? {
+    if ($place/tei:settlement) then
+        "registers.localityType.settlement"
+    else if ($place/tei:district) then
+        "registers.localityType.district"
+    else if ($place/tei:country) then
+        "registers.localityType.country"
+    else
+        ()
+};
+
+(:~
+ : Determine whether the locality name should be disambiguated with a type label.
+ : A label is added for duplicate names and for broader geographic entities
+ : such as districts or countries which do not also define a settlement.
+ :)
+declare function local:locality-needs-type-label(
+    $place as element(tei:place),
+    $name as xs:string?,
+    $duplicateNames as xs:string*
+) as xs:boolean {
+    ($name = $duplicateNames)
+    or (exists($place/tei:district) and not($place/tei:settlement))
+    or (exists($place/tei:country) and not($place/tei:settlement) and not($place/tei:district))
+};
+
+(:~
+ : Build the display name for a locality in the localities register.
+ : If needed, an i18n-enabled place type label is appended in square brackets
+ : to distinguish places, regions, and countries.
+ :)
+declare function local:locality-display-name(
+    $place as element(tei:place),
+    $duplicateNames as xs:string*
+) as node()* {
+    let $name := ft:field($place, 'name')[1]
+    let $typeKey := local:locality-type-key($place)
+    return
+        if (local:locality-needs-type-label($place, $name, $duplicateNames) and exists($typeKey)) then (
+            text { $name || " " },
+            text { "[" },
+            element span {
+                attribute class { "place-type" },
+                element pb-i18n { attribute key { $typeKey } }
+            },
+            text { "]" }
+        )
+        else
+            text { $name }
+};
+
 declare function api:output-locality($list, $letter as xs:string, $search as xs:string?, $mapping as map(*)) {
     let $count := count($list)
+    let $duplicateNames :=
+        for $place in $list
+        let $name := ft:field($place, 'name')[1]
+        group by $name
+        where count($place) > 1
+        return $name
     return
         array {
             element p {
@@ -230,22 +292,23 @@ declare function api:output-locality($list, $letter as xs:string, $search as xs:
             element ul {
                 attribute class { "place-list" },
                 for $place in $list
-                    let $name := ft:field($place, 'name')[1]
-                    let $id := $place/@xml:id/string()
-                    let $placeCounts := $mapping($id)
-                    let $corresp := if (exists($placeCounts?corresp)) then $placeCounts?corresp else 0
-                    let $mentions := if (exists($placeCounts?mentions)) then $placeCounts?mentions else 0
-                    let $geo := normalize-space($place/tei:location/tei:geo)
-                    let $coords := tokenize($geo)
-                    return
-                        if(string-length($name)>0)
-                        then (                       
+                let $name := ft:field($place, 'name')[1]
+                let $displayName := local:locality-display-name($place, $duplicateNames)
+                let $id := $place/@xml:id/string()
+                let $placeCounts := $mapping($id)
+                let $corresp := if (exists($placeCounts?corresp)) then $placeCounts?corresp else 0
+                let $mentions := if (exists($placeCounts?mentions)) then $placeCounts?mentions else 0
+                let $geo := normalize-space($place/tei:location/tei:geo)
+                let $coords := tokenize($geo)
+                order by lower-case($name) collation "http://www.w3.org/2013/collation/UCA?lang=de"
+                return
+                    if (string-length($name) > 0) then (
                         let $categoryParam := if ($letter = "[A-Z]") then substring($name, 1, 1) else $letter
                         let $params := "&amp;category=" || $categoryParam || "&amp;search=" || $search
                         return
                             element li {
                                 attribute class { "js-place-item place-item" },
-                            
+
                                 if (count($coords) = 2) then
                                     element pb-geolocation {
                                         attribute class { "place-geolocation" },
@@ -256,7 +319,7 @@ declare function api:output-locality($list, $letter as xs:string, $search as xs:
                                         attribute emit { "map" },
                                         attribute event { "click" },
                                         attribute zoom { 12 },
-                            
+
                                         element iron-icon {
                                             attribute class { "place-icon" },
                                             attribute icon { "maps:place" },
@@ -266,7 +329,7 @@ declare function api:output-locality($list, $letter as xs:string, $search as xs:
                                 else (
                                     element span {
                                         attribute class { "place-geolocation place-geolocation--disabled" },
-                                
+
                                         element iron-icon {
                                             attribute class { "no-geolocation-icon" },
                                             attribute icon { "social:public" },
@@ -274,20 +337,20 @@ declare function api:output-locality($list, $letter as xs:string, $search as xs:
                                         }
                                     }
                                 ),
-                            
+
                                 element div {
                                     attribute class { "place-main" },
-                            
+
                                     element a {
                                         attribute class { "js-place-link place-link" },
-                                        attribute href { $place/@xml:id || "?" || $params },
-                            
+                                        attribute href { $id || "?" || $params },
+
                                         element span {
                                             attribute class { "place-name" },
-                                            $name
+                                            $displayName
                                         }
                                     },
-                            
+
                                     element span {
                                         attribute class { "place-counts-tooltip" },
                                         element span {
@@ -316,7 +379,7 @@ declare function api:output-locality($list, $letter as xs:string, $search as xs:
                                     }
                                 }
                             }
-                        ) else()
+                    ) else ()
             }
         }
 };

@@ -173,7 +173,12 @@
         "resultsCount": {
             "localities": "Gefundene Orte"
         },
-        "scrollTop": "Zum Anfang der Ergebnisliste scrollen"
+        "scrollTop": "Zum Anfang der Ergebnisliste scrollen",
+        "localityType": {
+            "settlement": "Ort",
+            "district": "Bezirk/Region",
+            "country": "Land"
+        }
     },
     "sent": "Gesendet",
     "received": "Empfangen",
