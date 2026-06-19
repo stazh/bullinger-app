@@ -28,6 +28,12 @@ declare variable $api:QUERY_OPTIONS := map {
 };
 
 (:~
+ : Controls whether locality type labels (e.g. settlement, district, country)
+ : are appended to locality names in the localities register.
+ :)
+declare variable $api:REGISTER_LOCALITIES_SHOW_TYPE_LABELS := false();
+
+(:~
  : Keep this. This function does the actual lookup in the imported modules.
  :)
 declare function api:lookup($name as xs:string, $arity as xs:integer) {
@@ -285,17 +291,21 @@ declare function local:locality-display-name(
     $duplicateNames as xs:string*
 ) as node()* {
     let $name := ft:field($place, 'name')[1]
-    let $typeKey := local:locality-type-key($place)
     return
-        if (local:locality-needs-type-label($place, $name, $duplicateNames) and exists($typeKey)) then (
-            text { $name || " " },
-            text { "[" },
-            element span {
-                attribute class { "place-type" },
-                element pb-i18n { attribute key { $typeKey } }
-            },
-            text { "]" }
-        )
+        if ($api:REGISTER_LOCALITIES_SHOW_TYPE_LABELS) then
+            let $typeKey := local:locality-type-key($place)
+            return
+                if (local:locality-needs-type-label($place, $name, $duplicateNames) and exists($typeKey)) then (
+                    text { $name || " " },
+                    text { "[" },
+                    element span {
+                        attribute class { "place-type" },
+                        element pb-i18n { attribute key { $typeKey } }
+                    },
+                    text { "]" }
+                )
+                else
+                    text { $name }
         else
             text { $name }
 };
@@ -303,11 +313,13 @@ declare function local:locality-display-name(
 declare function api:output-locality($list, $letter as xs:string, $search as xs:string?, $mapping as map(*)) {
     let $count := count($list)
     let $duplicateNames :=
-        for $place in $list
-        let $name := ft:field($place, 'name')[1]
-        group by $name
-        where count($place) > 1
-        return $name
+        if ($api:REGISTER_LOCALITIES_SHOW_TYPE_LABELS) then
+            for $place in $list
+            let $name := ft:field($place, 'name')[1]
+            group by $name
+            where count($place) > 1
+            return $name
+        else ()
     return
         array {
             element p {
