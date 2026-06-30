@@ -37,10 +37,29 @@
                     <pb-custom-form class="facets" auto-submit="[name=view]" event="pb-results-received" subscribe="grid" emit="grid">
                         <div class="radios">
                             <label class="radio-option">
-                                <input class="radio-input" type="radio" name="view" checked="checked" value="all" data-template="templates:form-control"/> <pb-i18n key="registers.correspondenceAndMentions">(Korrespondenz und Erwähnungen)</pb-i18n>
+                                <input class="radio-input" 
+                                    type="radio" 
+                                    name="view" 
+                                    checked="checked" 
+                                    value="all" 
+                                    data-template="templates:form-control"/> 
+                                <pb-i18n key="registers.correspondenceAndMentions">Korrespondenz und Erwähnungen</pb-i18n>
                             </label>
                             <label class="radio-option">
-                                <input class="radio-input" type="radio" name="view" value="correspondence" data-template="templates:form-control"/> <pb-i18n key="registers.correspondence">(Korrespondenz)</pb-i18n>
+                                <input class="radio-input" 
+                                    type="radio" 
+                                    name="view" 
+                                    value="correspondence" 
+                                    data-template="templates:form-control"/> 
+                                <pb-i18n key="registers.correspondence">Korrespondenz</pb-i18n>
+                            </label>
+                            <label class="radio-option">
+                                <input class="radio-input"
+                                    type="radio"
+                                    name="view"
+                                    value="mentions"
+                                    data-template="templates:form-control"/>
+                                <pb-i18n key="registers.mentions">Erwähnungen</pb-i18n>
                             </label>
                         </div>
                     </pb-custom-form>

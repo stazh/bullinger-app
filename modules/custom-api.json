@@ -668,7 +668,7 @@
         "/api/localities-all-list": {
             "get": {
                 "summary": "List localities",
-                "description": "Retrieve list of pllocalitiesaces in format required by pb-split-list",
+                "description": "Retrieve list of places/localities in format required by pb-split-list",
                 "operationId": "custom:localities-all-list",
                 "parameters": [
 					{
@@ -678,14 +678,6 @@
 							"type": "string"
 						}
 					},					
-                    {
-                        "name": "dir",
-                        "in": "query",
-                        "schema": {
-                            "type": "string",
-                            "default": "asc"
-                        }
-                    },					
                     {
                         "name": "limit",
                         "in": "query",
@@ -706,9 +698,24 @@
                         "in": "query",
                         "schema": {
                             "type": "string",
-                            "default": ""
+                            "default": "all",
+                            "enum": ["all", "correspondence", "mentions"]
                         }
-                    }
+                    },
+                    {
+  						"name": "correspSent",
+  						"in": "query",
+  						"schema": {
+    						"type": "string"
+  						}
+					},
+					{
+						"name": "correspReceived",
+						"in": "query",
+						"schema": {
+							"type": "string"
+						}
+					}
                 ],
                 "responses": {
                     "200": {
@@ -724,26 +731,6 @@
                 }
             }
         },
-        "/api/localities-all": {
-            "get": {
-                "summary": "List all places",
-                "description": "Retrieve list of all places",
-                "operationId": "custom:localities-all",
-                "parameters": [],
-				"responses": {
-                    "200": {
-                        "description": "List of all places",
-                        "content": {
-                            "application/json": {
-                                "schema":{
-                                    "type": "array"
-                                }
-                            }
-                        }
-                    }
-				}
-			}
-		},
 		"/api/locality/{key}": {
             "get": {
                 "summary": "List register entries",
@@ -820,7 +807,8 @@
                         "in": "query",
                         "schema": {
                             "type": "string",
-                            "default": ""
+                            "default": "all",
+                            "enum": ["all", "correspondence", "mentions"]
                         }
                     },
 					{

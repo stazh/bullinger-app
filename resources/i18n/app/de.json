@@ -138,7 +138,12 @@
         "correspondents": "Korrespondenten",
         "correspondentsAndMentioned": "Korrespondenten und erwähnte Personen",
         "correspondence": "Korrespondenz",
+        "correspondencePlaceOfDispatch": "Absendeort",
+        "correspondencePlaceOfReceipt": "Empfangsort",
+        "correspondencePlacesOfDispatch": "Absendeorte",
+        "correspondencePlacesOfReceipt": "Empfangsorte",
         "correspondenceAndMentions": "Korrespondenz und Erwähnungen",
+        "mentions": "Erwähnungen",
         "all": "Alle",
         "archives": {
             "name": "Archiv",
@@ -172,6 +177,12 @@
         },
         "resultsCount": {
             "localities": "Gefundene Orte"
+        },
+        "scrollTop": "Zum Anfang der Ergebnisliste scrollen",
+        "localityType": {
+            "settlement": "Ort",
+            "district": "Bezirk/Region",
+            "country": "Land"
         }
     },
     "sent": "Gesendet",

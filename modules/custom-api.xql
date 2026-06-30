@@ -28,6 +28,12 @@ declare variable $api:QUERY_OPTIONS := map {
 };
 
 (:~
+ : Controls whether locality type labels (e.g. settlement, district, country)
+ : are appended to locality names in the localities register.
+ :)
+declare variable $api:REGISTER_LOCALITIES_SHOW_TYPE_LABELS := false();
+
+(:~
  : Keep this. This function does the actual lookup in the imported modules.
  :)
 declare function api:lookup($name as xs:string, $arity as xs:integer) {
@@ -117,14 +123,29 @@ declare function api:persons-all-list-sort($entries as element()*, $sortBy as xs
 
 (:~
  : API function for listing localities, grouped by initial letter and filtered by correspondence/mention count.
- : Accepts request parameters like "search", "category", "dir", "limit", "view".
+ : Accepts request parameters like "search", "category", "limit", "view", "correspSent", "correspReceived".
  :)
 declare function api:localities-all-list($request as map(*)) {
     let $search := normalize-space($request?parameters?search)
-    let $letterParam := $request?parameters?category    
-    let $sortDir := $request?parameters?dir
-    let $limit := $request?parameters?limit
-    let $view := $request?parameters?view
+    let $letterParam := $request?parameters?category
+    let $limit :=
+        if ($request?parameters?limit castable as xs:integer) then
+            xs:integer($request?parameters?limit)
+        else
+            50
+    let $view :=
+        let $value := normalize-space($request?parameters?view)
+        return
+            if ($value = ("correspondence", "mentions")) then
+                $value
+            else
+                "all"
+    let $correspSentSelected := $request?parameters?correspSent = "1"
+    let $correspReceivedSelected := $request?parameters?correspReceived = "1"
+
+    let $allCorrespPlaces := 
+        ($correspSentSelected and $correspReceivedSelected) or not($correspSentSelected or $correspReceivedSelected)
+
     let $options := api:get-register-query-options()
 
     (: --- Get localities mapping --- :)
@@ -132,13 +153,19 @@ declare function api:localities-all-list($request as map(*)) {
 
     (: --- Construct Lucene query based on view mode and search term --- :)
     let $baseQuery :=
-        if ($view = "correspondence") then "name:*"
-        else "name:* OR mentioned-names:*"
+        if ($view = "correspondence") then 
+            "name:*"
+        else if ($view = "mentions") then 
+            "mentioned-names:*"
+        else 
+            "name:* OR mentioned-names:*"
 
     let $query :=
         if ($search != "") then
             if ($view = "correspondence") then
                 "name:(" || $search || "*)"
+            else if ($view = "mentions") then
+                "mentioned-names:(" || $search || "*)"
             else
                 "name:(" || $search || "*) OR mentioned-names:(" || $search || "*)"
         else
@@ -149,15 +176,24 @@ declare function api:localities-all-list($request as map(*)) {
         ft:query(., $query, $options)
     ]
 
-    (: --- Filter localities based on usage mapping --- :)
+    (: --- Filter localities based on selected register view and correspondence role --- :)
     let $places := 
         for $place in $rawPlaces
         let $id := $place/@xml:id/string()
         let $placeCounts := $mapping($id)
         where exists($placeCounts)
         and (
-            ($view = "correspondence" and $placeCounts?corresp > 0) or
-            ($view != "correspondence" and $placeCounts?mentions > 0)
+            if ($view = "correspondence") then
+                if ($allCorrespPlaces) then
+                    $placeCounts?corresp > 0
+                else if ($correspSentSelected) then
+                    $placeCounts?correspSent > 0
+                else
+                    $placeCounts?correspReceived > 0
+            else if ($view = "mentions") then
+                $placeCounts?mentions > 0
+            else
+                $placeCounts?correspAndMentions > 0
         )
         return $place
 
@@ -166,8 +202,8 @@ declare function api:localities-all-list($request as map(*)) {
         map:merge(
             for $place in $places
             let $name := ft:field($place, 'name')[1]
-            order by $name
-            group by $letter := substring($name, 1, 1) => upper-case()
+            order by lower-case($name)
+            group by $letter := upper-case(substring($name, 1, 1))
             return
                 map:entry($letter, $place)
         )
@@ -214,8 +250,76 @@ declare function api:localities-all-list($request as map(*)) {
         }
 };
 
+(:~
+ : Return the i18n key for the locality type represented by the given place.
+ : The type is derived from the available TEI child elements, preferring
+ : settlement over district and district over country.
+ :)
+declare function local:locality-type-key($place as element(tei:place)) as xs:string? {
+    if ($place/tei:settlement) then
+        "registers.localityType.settlement"
+    else if ($place/tei:district) then
+        "registers.localityType.district"
+    else if ($place/tei:country) then
+        "registers.localityType.country"
+    else
+        ()
+};
+
+(:~
+ : Determine whether the locality name should be disambiguated with a type label.
+ : A label is added for duplicate names and for broader geographic entities
+ : such as districts or countries which do not also define a settlement.
+ :)
+declare function local:locality-needs-type-label(
+    $place as element(tei:place),
+    $name as xs:string?,
+    $duplicateNames as xs:string*
+) as xs:boolean {
+    ($name = $duplicateNames)
+    or (exists($place/tei:district) and not($place/tei:settlement))
+    or (exists($place/tei:country) and not($place/tei:settlement) and not($place/tei:district))
+};
+
+(:~
+ : Build the display name for a locality in the localities register.
+ : If needed, an i18n-enabled place type label is appended in square brackets
+ : to distinguish places, regions, and countries.
+ :)
+declare function local:locality-display-name(
+    $place as element(tei:place),
+    $duplicateNames as xs:string*
+) as node()* {
+    let $name := ft:field($place, 'name')[1]
+    return
+        if ($api:REGISTER_LOCALITIES_SHOW_TYPE_LABELS) then
+            let $typeKey := local:locality-type-key($place)
+            return
+                if (local:locality-needs-type-label($place, $name, $duplicateNames) and exists($typeKey)) then (
+                    text { $name || " " },
+                    text { "[" },
+                    element span {
+                        attribute class { "place-type" },
+                        element pb-i18n { attribute key { $typeKey } }
+                    },
+                    text { "]" }
+                )
+                else
+                    text { $name }
+        else
+            text { $name }
+};
+
 declare function api:output-locality($list, $letter as xs:string, $search as xs:string?, $mapping as map(*)) {
     let $count := count($list)
+    let $duplicateNames :=
+        if ($api:REGISTER_LOCALITIES_SHOW_TYPE_LABELS) then
+            for $place in $list
+            let $name := ft:field($place, 'name')[1]
+            group by $name
+            where count($place) > 1
+            return $name
+        else ()
     return
         array {
             element p {
@@ -230,27 +334,68 @@ declare function api:output-locality($list, $letter as xs:string, $search as xs:
             element ul {
                 attribute class { "place-list" },
                 for $place in $list
-                    let $name := ft:field($place, 'name')[1]
-                    let $id := $place/@xml:id/string()
-                    let $placeCounts := $mapping($id)
-                    let $corresp := if (exists($placeCounts?corresp)) then $placeCounts?corresp else 0
-                    let $mentions := if (exists($placeCounts?mentions)) then $placeCounts?mentions else 0
-                    return
-                        if(string-length($name)>0)
-                        then (                       
+                let $name := ft:field($place, 'name')[1]
+                let $displayName := local:locality-display-name($place, $duplicateNames)
+                let $id := $place/@xml:id/string()
+                let $placeCounts := $mapping($id)
+                let $corresp := if (exists($placeCounts?corresp)) then $placeCounts?corresp else 0
+                let $correspSent := if (exists($placeCounts?correspSent)) then $placeCounts?correspSent else 0
+                let $correspReceived := if (exists($placeCounts?correspReceived)) then $placeCounts?correspReceived else 0
+                let $correspAndMentions := if (exists($placeCounts?correspAndMentions)) then $placeCounts?correspAndMentions else 0
+                let $mentions := if (exists($placeCounts?mentions)) then $placeCounts?mentions else 0
+                let $geo := normalize-space($place/tei:location/tei:geo)
+                let $coords := tokenize($geo)
+                order by lower-case($name) collation "http://www.w3.org/2013/collation/UCA?lang=de"
+                return
+                    if (string-length($name) > 0) then (
                         let $categoryParam := if ($letter = "[A-Z]") then substring($name, 1, 1) else $letter
-                        let $params := "&amp;category=" || $categoryParam || "&amp;search=" || $search                           
-                        let $coords := tokenize($place/tei:location/tei:geo)
+                        let $params := "&amp;category=" || $categoryParam || "&amp;search=" || $search
                         return
                             element li {
-                                attribute class { "place-item" },
-                                element a {
-                                    attribute class { "place-link" },
-                                    attribute href { $place/@xml:id || "?" || $params },
+                                attribute class { "js-place-item place-item" },
+
+                                if (count($coords) = 2) then
+                                    element pb-geolocation {
+                                        attribute class { "place-geolocation" },
+                                        attribute latitude { $coords[1] },
+                                        attribute longitude { $coords[2] },
+                                        attribute label { $name },
+                                        attribute data-place-id { $id },
+                                        attribute emit { "map" },
+                                        attribute event { "click" },
+                                        attribute zoom { 12 },
+
+                                        element iron-icon {
+                                            attribute class { "place-icon" },
+                                            attribute icon { "maps:place" },
+                                            attribute fill { "currentColor" }
+                                        }
+                                    }
+                                else (
                                     element span {
-                                        attribute class { "place-name" },
-                                        $name
+                                        attribute class { "place-geolocation place-geolocation--disabled" },
+
+                                        element iron-icon {
+                                            attribute class { "no-geolocation-icon" },
+                                            attribute icon { "social:public" },
+                                            attribute fill { "currentColor" }
+                                        }
+                                    }
+                                ),
+
+                                element div {
+                                    attribute class { "place-main" },
+
+                                    element a {
+                                        attribute class { "js-place-link place-link" },
+                                        attribute href { $id || "?" || $params },
+
+                                        element span {
+                                            attribute class { "place-name" },
+                                            $displayName
+                                        }
                                     },
+
                                     element span {
                                         attribute class { "place-counts-tooltip" },
                                         element span {
@@ -262,7 +407,7 @@ declare function api:output-locality($list, $letter as xs:string, $search as xs:
                                         text { ": " },
                                         element span {
                                             attribute class { "place-counts-value" },
-                                            $mentions
+                                            $correspAndMentions
                                         },
                                         element br {},
                                         element span {
@@ -275,58 +420,68 @@ declare function api:output-locality($list, $letter as xs:string, $search as xs:
                                         element span {
                                             attribute class { "place-counts-value" },
                                             $corresp
-                                        }
-                                    },
-                                    if(string-length(normalize-space($place/tei:location/tei:geo)) > 0)
-                                    then (
-                                        element pb-geolocation {
-                                            attribute class { "place-geolocation" },
-                                            attribute latitude { $coords[1] },
-                                            attribute longitude { $coords[2] },
-                                            attribute label { $name},
-                                            attribute emit { "map" },
-                                            attribute event { "click" },
-                                            attribute zoom { 9 },
+                                        },
 
-                                            element iron-icon {
-                                                attribute class { "place-icon" },
-                                                attribute icon { "maps:place" },
-                                                attribute fill { "currentColor" }
+                                        if ($corresp > 0) then (
+                                            element br {},
+                                            element span {
+                                                attribute class { "place-counts-subitem" },
+                                                element span {
+                                                    attribute class { "place-counts-bullet" },
+                                                    text { "•" }
+                                                },
+                                                element span {
+                                                    attribute class { "place-counts-label" },
+                                                    element pb-i18n {
+                                                        attribute key { "registers.correspondencePlaceOfDispatch" }
+                                                    }
+                                                },
+                                                text { ": " },
+                                                element span {
+                                                    attribute class { "place-counts-value" },
+                                                    $correspSent
+                                                }
+                                            },
+                                            element br {},
+                                            element span {
+                                                attribute class { "place-counts-subitem" },
+                                                element span {
+                                                    attribute class { "place-counts-bullet" },
+                                                    text { "•" }
+                                                },
+                                                element span {
+                                                    attribute class { "place-counts-label" },
+                                                    element pb-i18n {
+                                                        attribute key { "registers.correspondencePlaceOfReceipt" }
+                                                    }
+                                                },
+                                                text { ": " },
+                                                element span {
+                                                    attribute class { "place-counts-value" },
+                                                    $correspReceived
+                                                }
                                             }
+                                        ) else (),
+
+                                        element br {},
+                                        element span {
+                                            attribute class { "place-counts-label" },
+                                            element pb-i18n {
+                                                attribute key { "registers.mentions" }
+                                            }
+                                        },
+                                        text { ": " },
+                                        element span {
+                                            attribute class { "place-counts-value" },
+                                            $mentions
                                         }
-                                    )
-                                    else ()
+                                    }
                                 }
                             }
-                        ) else()
+                    ) else ()
             }
         }
 };
-
-declare function api:localities-all($request as map(*)) {    
-    let $places := $config:localities//tei:place[ft:query(., 'name:*', map {
-                    "leading-wildcard": "yes",
-                    "filter-rewrite": "yes"
-                })]
-    return
-        array {
-            for $place in $places
-            return
-                if(string-length(normalize-space($place/tei:location/tei:geo)) > 0)
-                then (
-                    let $tokenized := tokenize($place/tei:location/tei:geo)                    
-                    let $name := ft:field($place, 'name')[1]
-                    return
-                        map {
-                            "latitude":$tokenized[1],
-                            "longitude":$tokenized[2],
-                            "label":$name,
-                            "id":$place/@xml:id/string()
-                        }
-                ) else ()
-            }
-};
-
 
 declare function api:sort-letters($entries as element()*, $sortBy as xs:string, $dir as xs:string) {
     let $sorted :=
@@ -672,6 +827,15 @@ declare function api:locality-filter($filter as xs:string?, $key as xs:string, $
     let $letters := switch ($view)
         case "correspondence" return
             $all-letters[ft:query(.//tei:text, 'place:' || $key , $options)]
+        case "mentions" return
+            $all-letters[
+                ft:query(.//tei:text, 'mentioned-places:' || $key, $options)
+            ][
+                .//tei:placeName[
+                    @ref = $key
+                    and not(ancestor::tei:correspAction)
+                ]
+            ]
         default return
             $all-letters[ft:query(.//tei:text, 'place:' || $key || ' OR mentioned-places:' || $key , $options)]
     let $result := 

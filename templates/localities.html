@@ -2,7 +2,7 @@
     <head data-template="lib:include" data-template-path="templates/header.html">
         <title data-target="title-template" data-template-page="localities">Bullinger Digital: Orte</title>
         <meta data-target="title-template" name="pb-template" content="localities.html"/>
-        <script data-target="script-preload" type="module" src="pb-leaflet-map.js" data-template="pages:load-components"></script>
+        <script data-target="script-preload" type="module" src="pb-leaflet-map.js" data-template="pages:load-components"/>
     </head>
 
     <body>
@@ -12,16 +12,57 @@
             </header>
             <main class="register register__localities center-l">
                 <div class="register-list">
-                    <pb-custom-form id="filter" class="facets" auto-submit="[name=view]" emit="transcription">
-                        <div class="radios">
-                            <label class="radio-option">
-                                <input class="radio-input" type="radio" name="view" checked="checked" value="all" data-template="templates:form-control" />
-                                <pb-i18n key="registers.correspondenceAndMentions">Korrespondenz und Erwähnungen</pb-i18n>
-                            </label>
-                            <label class="radio-option">
-                                <input class="radio-input" type="radio" name="view" value="correspondence" data-template="templates:form-control" />
-                                <pb-i18n key="registers.correspondence">Korrespondenz</pb-i18n>
-                            </label>
+                    <pb-custom-form id="filter" class="facets" emit="transcription">
+                        <div class="radios radios--main">
+                            <div class="radio-option-group">
+                                <label class="radio-option">
+                                    <input class="radio-input"
+                                        type="radio"
+                                        name="view"
+                                        checked="checked"
+                                        value="all"
+                                        data-template="templates:form-control" />
+                                    <pb-i18n key="registers.correspondenceAndMentions">Korrespondenz und Erwähnungen</pb-i18n>
+                                </label>
+                            </div>
+                            <div class="radio-option-group radio-option-group--correspondence">
+                                <label class="radio-option">
+                                    <input class="radio-input"
+                                        type="radio"
+                                        name="view"
+                                        value="correspondence"
+                                        data-template="templates:form-control" />
+                                    <pb-i18n key="registers.correspondence">Korrespondenz</pb-i18n>
+                                </label>
+                                <div class="checkboxes checkboxes--subfilter">
+                                    <label class="checkbox-option">
+                                        <input class="checkbox-input"
+                                            type="checkbox"
+                                            name="correspSent"
+                                            value="1"
+                                            data-template="templates:form-control" />
+                                        <pb-i18n key="registers.correspondencePlacesOfDispatch">Absendeorte</pb-i18n>
+                                    </label>
+                                    <label class="checkbox-option">
+                                        <input class="checkbox-input"
+                                            type="checkbox"
+                                            name="correspReceived"
+                                            value="1"
+                                            data-template="templates:form-control" />
+                                        <pb-i18n key="registers.correspondencePlacesOfReceipt">Empfangsorte</pb-i18n>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="radio-option-group">
+                                <label class="radio-option">
+                                    <input class="radio-input"
+                                        type="radio"
+                                        name="view"
+                                        value="mentions"
+                                        data-template="templates:form-control" />
+                                    <pb-i18n key="registers.mentions">Erwähnungen</pb-i18n>
+                                </label>
+                            </div>
                         </div>
                     </pb-custom-form>
                     <pb-custom-form id="options" auto-submit="paper-input,paper-icon-button" emit="transcription">
@@ -29,15 +70,24 @@
                             <paper-icon-button icon="search" slot="suffix"/>
                         </paper-input>
                     </pb-custom-form>
-                    <pb-split-list class="register-split-list" 
-                        url="api/localities-all-list" 
-                        subforms="#options,#filter" 
-                        selected="A" 
-                        emit="transcription" 
-                        subscribe="transcription" 
-                        data-template="pages:parse-params"/>
+                    <div class="register-results">
+                        <pb-split-list class="register-split-list" 
+                            url="api/localities-all-list" 
+                            subforms="#options,#filter" 
+                            selected="A" 
+                            emit="transcription" 
+                            subscribe="transcription" 
+                            data-template="pages:parse-params"/>
+                        <div class="register-loading" aria-hidden="true">
+                            <iron-icon icon="icons:refresh"></iron-icon>
+                        </div>
+                    </div>
+                    <button id="register-scroll-top" class="register-scroll-top" type="button"
+                        data-i18n="[title]registers.scrollTop;[aria-label]registers.scrollTop">
+                        <iron-icon icon="icons:expand-less"></iron-icon>
+                    </button>
                 </div>
-                <pb-leaflet-map id="map" subscribe="map" emit="map" zoom="3" cluster="" latitude="50" longitude="20">
+                <pb-leaflet-map id="map" subscribe="map" emit="map" zoom="9" fit-markers="" cluster="" latitude="50" longitude="20">
                     <pb-map-layer show=""
                         base="" 
                         label="Mapbox OSM"
@@ -47,7 +97,6 @@
                         attribution="© Mapbox © OpenStreetMap">
                     </pb-map-layer>
                 </pb-leaflet-map>
-
 
                 <!-- pb-leaflet-map id="map" subscribe="map" emit="map" zoom="10" cluster=""
                     latitude="47.69732" longitude="8.63493">
@@ -62,32 +111,7 @@
             </main>
         </pb-page>
         <footer data-template="templates:include" data-template-path="templates/footer.html"/>
-        <script>
-            window.addEventListener('WebComponentsReady', function() {
-                const map = document.querySelector('pb-leaflet-map');
-
-                pbEvents.subscribe('pb-page-ready', null, function() {
-                    const pbPage = document.querySelector('pb-page');
-                    const endpoint = pbPage.getEndpoint();
-                    const url = endpoint + '/api/localities-all';
-
-                    fetch(url)
-                        .then(function(response) {
-                            return response.json();
-                        })
-                        .then(function(json) {
-                            pbEvents.emit('pb-update-map', 'map', json);
-                        });
-                });
-
-                pbEvents.subscribe('pb-leaflet-marker-click', 'map', function(ev) {
-                    const label = ev.detail.element.label;
-                    const key = ev.detail.element.id;
-                    const category = label.substring(0, 1);
-                    window.location = key + '?category=' + category;
-                });
-            });
-        </script>
+        <script src="resources/scripts/localities.js"></script>
     </body>
 
 </html>

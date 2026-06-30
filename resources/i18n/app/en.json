@@ -138,7 +138,12 @@
         "correspondents": "Correspondents",
         "correspondentsAndMentioned": "Correspondents and mentioned persons",
         "correspondence": "Correspondence",
+        "correspondencePlaceOfDispatch": "Place of Dispatch",
+        "correspondencePlaceOfReceipt": "Place of Receipt",
+        "correspondencePlacesOfDispatch": "Places of Dispatch",
+        "correspondencePlacesOfReceipt": "Places of Receipt",
         "correspondenceAndMentions": "Correspondence and mentions",
+        "mentions": "Mentions",
         "all": "All",
         "archives": {
             "name": "Archive",
@@ -172,6 +177,12 @@
         },
         "resultsCount": {
             "localities": "Found Places"
+        },
+        "scrollTop": "Scroll to top of results",
+        "localityType": {
+            "settlement": "Place",
+            "district": "District/Region",
+            "country": "Country"
         }
     },
     "sent": "Sent",

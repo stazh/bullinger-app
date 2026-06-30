@@ -896,9 +896,19 @@ pb-view {
     margin: 0 0 0 -0.2rem;
 }
 
-.place-list .place-link {
+.place-list .place-item {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+}
+
+.place-list .place-main {
     display: inline-block;
     position: relative;
+}
+
+.place-list .place-link {
+    display: inline-block;
 }
 
 .place-list .place-name {
@@ -912,6 +922,8 @@ pb-view {
     color: var(--bb-dark-gray);
     display: none;
     font-size: 0.9rem;
+    left: 100%;
+    margin-left: 0.5rem;
     padding: 0.5rem 1rem;
     position: absolute;
     top: 0;
@@ -929,12 +941,31 @@ pb-view {
     font-weight: bold;
 }
 
-.place-list iron-icon.place-icon {
-    --iron-icon-fill-color: var(--bb-beige);
-    margin-right: 0.3rem;
+.place-list .place-counts-subitem {
+    display: inline-block;
 }
 
-.place-list .place-item:hover a.place-link {
+.place-list .place-counts-bullet {
+    display: inline-block;
+    width: 0.8rem;
+}
+
+.place-list .place-geolocation {
+    display: inline-block;
+    flex-shrink: 0;
+    margin-right: 0.6rem;
+}
+
+.place-list iron-icon.place-icon {
+    --iron-icon-fill-color: var(--bb-beige);
+}
+
+.place-list iron-icon.no-geolocation-icon {
+    --iron-icon-fill-color: var(--bb-link-disabled);
+    --iron-icon-height: 20px;
+}
+
+.place-list .place-item:hover .place-link {
     color: var(--bb-beige-dark);
 }
 
@@ -957,24 +988,113 @@ pb-view {
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-gap: var(--s3);
-    margin-top: 3rem;
     grid-template-areas: "first second";
+    height: 80vh;
+    margin-top: 3rem;
+    min-height: 0;
 }
 
-@media (max-width: 768px) {
-    .register__localities {
-        grid-gap: var(--s1);
-        grid-template-columns: 1fr;
-        grid-template-areas:
-        "second"
-        "first";
-        margin-top: 1rem;
+.register__localities .register-results {
+    position: relative;
+    min-height: 0;
+    height: 100%;
+}
+
+.register__localities .register-loading {
+    align-items: center;
+    background: rgba(255, 255, 255, 0.75);
+    bottom: 0;
+    display: none;
+    justify-content: center;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 20;
+}
+
+.register__localities .register-list.is-loading .register-loading {
+    display: flex;
+}
+
+.register__localities .register-loading iron-icon {
+    --iron-icon-height: 32px;
+    --iron-icon-width: 32px;
+    animation: locality-loading-spin 1s linear infinite;
+    color: var(--bb-beige-dark);
+}
+
+@keyframes locality-loading-spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
     }
 }
 
 .register__localities .register-list {
     --pb-categorized-list-columns: 1;
+    display: grid;
     grid-area: first;
+    grid-template-rows: auto auto minmax(0, 1fr);
+    height: 100%;
+    min-height: 0;
+    position: relative;
+}
+
+.register__localities .register-list pb-custom-form {
+    min-height: 0;
+}
+
+.register__localities .register-scroll-top {
+    align-items: center;
+    background: transparent;
+    bottom: 0;
+    border: none;
+    color: var(--pb-link-color);
+    cursor: pointer;
+    display: inline-flex;
+    height: 2rem;
+    justify-content: center;
+    padding: 0;
+    position: absolute;
+    right: 0.2rem;
+    width: 2rem;
+    z-index: 20;
+}
+
+.register__localities .register-scroll-top:hover {
+    color: var(--bb-beige-dark);
+}
+
+.register__localities .register-scroll-top iron-icon {
+    --iron-icon-width: 24px;
+    --iron-icon-height: 24px;
+    --iron-icon-fill-color: currentColor;
+}
+
+.register__localities pb-split-list.register-split-list {
+    border-bottom: 1px solid var(--bb-dark-gray);
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.register__localities pb-split-list.register-split-list::part(items) {
+    display: block;
+    min-height: 0;
+    overflow-y: auto;
+    padding-bottom: 7rem;
+    box-sizing: border-box;
+}
+
+.register__localities .place-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 0 -0.2rem;
 }
 
 .register__localities .result-count {
@@ -989,15 +1109,93 @@ pb-view {
     margin-bottom: 0;
 }
 
+.register__localities .register-list pb-custom-form.facets .radios--main {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.register__localities .register-list pb-custom-form.facets .radio-option-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.register__localities .register-list pb-custom-form.facets .radio-option,
+.register__localities .register-list pb-custom-form.facets .checkbox-option {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.register__localities .register-list pb-custom-form.facets .checkbox-option {
+    color: var(--bb-dark-gray);
+    font-size: 0.95rem;
+}
+
+.register__localities .register-list pb-custom-form.facets .checkbox-input {
+    accent-color: var(--bb-beige);
+}
+
+.register__localities .register-list pb-custom-form.facets .checkboxes--subfilter {
+    margin-top: 0.4rem;
+    margin-left: 1.45rem;
+    padding-left: 0.75rem;
+    border-left: 2px solid var(--bb-light-gray);
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.register__localities .register-list pb-custom-form.facets .checkboxes--subfilter.is-inactive {
+    opacity: 0.55;
+}
+
 .register__localities pb-leaflet-map {
     grid-area: second;
     width: 100%;
-    height: 50vh;
+    height: 100%;
+    min-height: 0;
 }
 
 @media (max-width: 768px) {
+    .register__localities {
+        grid-gap: var(--s1);
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "second"
+            "first";
+        height: auto;
+        margin-top: 1rem;
+    }
+
+    .register__localities .register-list {
+        border-bottom: 1px solid var(--bb-dark-gray);
+        height: 52vh;
+        overflow: hidden;
+    }
+
+    .register__localities .register-list pb-custom-form {
+        max-width: 100%;
+    }
+
+    .register__localities .place-list {
+        height: auto;
+        overflow: visible;
+    }
+
     .register__localities pb-leaflet-map {
         height: 30vh;
+    }
+}
+
+@media (max-width: 768px) and (max-height: 768px) {
+    .register__localities pb-leaflet-map {
+        height: 22vh;
+    }
+    
+    .register__localities .register-list {
+        height: 57vh;
     }
 }
 
