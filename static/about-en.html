@@ -61,9 +61,30 @@
                 <p>The source and type of transcription is indicated in the <iron-icon style="margin-top:-4px;"
                         slot="default" icon="info-outline" class="source-info--icon"></iron-icon> next to the heading
                     “Letter Text.”</p>
-                <p>No transcriptions are available for letters for which we have no facsimiles.</p>
             </blockquote>
             <ul>
+                <li>
+                    <p>Alignments between facsimile (image) and transcription (text).</p>
+                    <ul>
+                        <li>
+                            <p>All alignments are generated automatically, which can lead to errors,
+                                especially with complex layouts or words hyphenated at the end of a
+                                line.</p>
+                        </li>
+                        <li>
+                            <p>Manual transcriptions do not follow the layout of the facsimiles,
+                                i.e. line breaks and paragraph breaks do not correspond. The line in
+                                the facsimile is authoritative for the alignment; in the
+                                transcription the corresponding text may be spread over two
+                                lines.</p>
+                        </li>
+                        <li>
+                            <p>Machine-generated transcriptions follow the layout of the manuscript,
+                                i.e. one line in the facsimile corresponds to one line in the
+                                transcription.</p>
+                        </li>
+                    </ul>
+                </li>
                 <li>
                     <p>Editorial notes and comments</p>
                     <ul>
@@ -109,7 +130,9 @@
                             </ul>
                         </li>
                         <li>
-                            <p>Places mentioned or designated as locations of sending or receiving a letter</p>
+                            <p>Places mentioned or designated as locations of sending or receiving a
+                                letter. The places listed are shown on the interactive map. The map
+                                allows you to navigate directly to the letters.</p>
                         </li>
                         <li>
                             <p>Institutions/groups acting as correspondents</p>
@@ -286,8 +309,9 @@
                 </li>
                 <li>
                     <p>Name display<br />
-                        You can highlight person and place names mentioned in a letter (in the summary, text, and
-                        footnotes) by clicking “Highlight names” above the metadata. Clicking on an underlined name
+                        You can highlight person and place names mentioned in the summary, letter text, and
+                        footnotes by clicking “Highlight names” above the metadata. The same function is also
+                        available above the letter text (“Highlight names” box). Clicking on an underlined name
                         shows the indexed name. Clicking on the indexed name opens its detail page (see Index). This
                         option is only available for manually transcribed letters.</p>
                 </li>
